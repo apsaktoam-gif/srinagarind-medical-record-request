@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // Initialize Firebase
-firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
 // Login attempt tracking for rate limiting
