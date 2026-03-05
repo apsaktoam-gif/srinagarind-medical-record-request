@@ -11,18 +11,19 @@ const api = {
     try {
       let idToken = null;
       
-      // Get ID token if user is authenticated (not needed for public actions)
-      if (isAuthenticated && isAuthenticated()) {
+      // ดึง ID token ล่าสุดและบังคับรีเฟรชเพื่อป้องกันปัญหา Token หมดอายุ
+      if (typeof isAuthenticated !== 'undefined' && isAuthenticated()) {
         try {
           idToken = await getIdToken();
         } catch (e) {
-          // Token error, continue without it for public actions
+          console.warn("Authentication token error, proceeding as public.");
         }
       }
       
+      // ส่งคำขอไปยัง Google Apps Script Web App
       const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
+        headers: { 'Content-Type': 'text/plain' }, // ใช้ text/plain เพื่อเลี่ยงปัญหา CORS
         body: JSON.stringify({ action, params, idToken })
       });
       
@@ -31,6 +32,15 @@ const api = {
       const result = await res.json();
       
       if (!result.success) {
+        // หากเซิร์ฟเวอร์แจ้งว่า Token หมดอายุ ให้สั่งออกจากระบบทันที
+        if (result.error === 'Invalid or expired token') {
+          showToast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'error');
+          if (typeof logout !== 'undefined') {
+             setTimeout(() => logout(), 2000);
+          }
+          return null;
+        }
+        
         showToast(result.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่', 'error');
         return null;
       }
@@ -292,8 +302,9 @@ const api = {
  * Initialize API by checking if URL is configured
  */
 function initializeAPI() {
-  if (CONFIG.APPS_SCRIPT_URL === 'YOUR_DEPLOYED_WEB_APP_URL') {
-    console.warn('⚠️ Apps Script URL not configured. Please update CONFIG.APPS_SCRIPT_URL');
+  // ตรวจสอบความถูกต้องของ URL ใน CONFIG
+  if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes('YOUR_DEPLOYED')) {
+    console.warn('⚠️ Apps Script URL not configured. Please update CONFIG.APPS_SCRIPT_URL in config.js');
   }
 }
 
