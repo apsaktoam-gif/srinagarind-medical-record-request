@@ -16,11 +16,12 @@ function toBuddhistYear(date) {
  */
 function formatThaiDate(isoString) {
   if (!isoString) return '';
-  const date = new Date(isoString + 'T00:00:00Z');
-  const day = date.getUTCDate();
-  const month = CONFIG.THAI_MONTHS[date.getUTCMonth()];
-  const year = toBuddhistYear(date);
-  return `${day} ${month} ${year}`;
+  // แยกส่วนปี เดือน วัน เพื่อป้องกันปัญหา Timezone Offset
+  const [year, month, day] = isoString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const thaiMonth = CONFIG.THAI_MONTHS[date.getMonth()];
+  const thaiYear = toBuddhistYear(date);
+  return `${day} ${thaiMonth} ${thaiYear}`;
 }
 
 /**
@@ -48,8 +49,8 @@ function buddhistToISO(ddmmyyyy) {
   if (!ddmmyyyy) return '';
   const parts = ddmmyyyy.split('/');
   if (parts.length !== 3) return '';
-  const day = parts[0];
-  const month = parts[1];
+  const day = parts[0].padStart(2, '0');
+  const month = parts[1].padStart(2, '0');
   const buddhist_year = parseInt(parts[2]);
   const gregorian_year = buddhist_year - 543;
   return `${gregorian_year}-${month}-${day}`;
@@ -62,24 +63,23 @@ function buddhistToISO(ddmmyyyy) {
  */
 function isoToBuddhistDisplay(isoString) {
   if (!isoString) return '';
-  const date = new Date(isoString + 'T00:00:00Z');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = toBuddhistYear(date);
-  return `${day}/${month}/${year}`;
+  const [year, month, day] = isoString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = toBuddhistYear(date);
+  return `${d}/${m}/${y}`;
 }
 
 /**
- * Validate HN format
- * Pattern: 2 letters + 4 digits (e.g., AA1234)
+ * Validate HN format (2 letters + 4 digits)
  */
 function validateHN(hn) {
   return /^[A-Za-z]{2}\d{4}$/.test(hn);
 }
 
 /**
- * Validate AN format
- * Pattern: 1 letter + 2 digits - 6 digits (e.g., I26-012345)
+ * Validate AN format (1 letter + 2 digits - 6 digits)
  */
 function validateAN(an) {
   return /^[A-Za-z]\d{2}-\d{6}$/.test(an);
@@ -87,10 +87,9 @@ function validateAN(an) {
 
 /**
  * Validate phone number format
- * Pattern: 0XX-XXXX-XXXX or 0XXX-XXXX-XXXX
  */
 function validatePhone(phone) {
-  return /^0[0-9]{1,2}-[0-9]{3,4}-[0-9]{4}$/.test(phone);
+  return /^0[0-9]{1,2}-[0-9]{3,4}-[0-9]{4}$/.test(phone) || /^0[0-9]{9}$/.test(phone);
 }
 
 /**
@@ -118,7 +117,6 @@ function formatStatus(status) {
 
 /**
  * Show toast notification
- * Types: success (green) | error (red) | warning (yellow) | info (blue)
  */
 function showToast(message, type = 'info') {
   const colors = {
@@ -130,67 +128,66 @@ function showToast(message, type = 'info') {
 
   const container = document.getElementById('toast-container') || createToastContainer();
   const toast = document.createElement('div');
-  toast.className = `${colors[type] || colors.info} text-white px-4 py-3 rounded-lg shadow-lg animate-slide-in`;
+  toast.className = `${colors[type] || colors.info} text-white px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 mb-2`;
   toast.textContent = message;
   container.appendChild(toast);
 
   setTimeout(() => {
-    toast.classList.add('animate-fade-out');
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-20px)';
     setTimeout(() => toast.remove(), 300);
-  }, 2500);
+  }, 3000);
 }
 
-/**
- * Create toast container if it doesn't exist
- */
 function createToastContainer() {
   const container = document.createElement('div');
   container.id = 'toast-container';
-  container.className = 'fixed top-4 right-4 z-50 flex flex-col gap-2';
+  container.className = 'fixed top-4 right-4 z-[9999] flex flex-col items-end';
   document.body.appendChild(container);
   return container;
 }
 
 /**
- * Show loading overlay
+ * Show/Hide loading overlay
  */
 function showLoading() {
   const overlay = document.getElementById('loading-overlay');
   if (overlay) overlay.classList.remove('hidden');
 }
 
-/**
- * Hide loading overlay
- */
 function hideLoading() {
   const overlay = document.getElementById('loading-overlay');
   if (overlay) overlay.classList.add('hidden');
 }
 
 /**
- * Show confirmation modal
+ * Show confirmation modal (ปรับปรุงให้ใช้ Event Listener แทน String Function)
  */
 function showModal(title, message, onConfirm, confirmLabel = 'ยืนยัน', danger = false) {
   const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[9998] flex items-center justify-center p-4';
   modal.innerHTML = `
-    <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-      <h2 class="text-lg font-semibold text-gray-900 mb-2">${title}</h2>
+    <div class="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl transform transition-all">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">${title}</h2>
       <p class="text-gray-600 mb-6">${message}</p>
       <div class="flex gap-3 justify-end">
-        <button class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition" onclick="this.closest('.fixed').remove()">
+        <button id="modal-cancel" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
           ยกเลิก
         </button>
-        <button class="px-4 py-2 rounded-lg ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white transition" onclick="this.closest('.fixed').remove(); (${onConfirm.toString()})()">
+        <button id="modal-confirm" class="px-4 py-2 rounded-lg ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium transition">
           ${confirmLabel}
         </button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.remove();
-  });
+
+  const close = () => modal.remove();
+  modal.querySelector('#modal-cancel').onclick = close;
+  modal.querySelector('#modal-confirm').onclick = () => {
+    onConfirm();
+    close();
+  };
 }
 
 /**
@@ -202,15 +199,13 @@ function downloadCSV(data, filename) {
     return;
   }
 
-  // Get headers from first object
   const headers = Object.keys(data[0]);
   const csvContent = [
-    '\uFEFF' + headers.join(','), // BOM for UTF-8 + headers
+    '\uFEFF' + headers.join(','), 
     ...data.map(row => 
       headers.map(header => {
-        const value = row[header];
-        // Escape quotes and wrap in quotes if contains comma
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+        let value = row[header] === null || row[header] === undefined ? '' : row[header];
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
           return `"${value.replace(/"/g, '""')}"`;
         }
         return value;
@@ -220,212 +215,146 @@ function downloadCSV(data, filename) {
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
   link.click();
-  document.body.removeChild(link);
 }
 
 /**
- * Get avatar initial from first name
+ * Avatar Helpers
  */
 function getAvatarInitial(firstName) {
   return firstName ? firstName.charAt(0).toUpperCase() : '?';
 }
 
-/**
- * Get avatar color based on UID
- */
 function getAvatarColor(uid) {
   if (!uid) return CONFIG.AVATAR_COLORS[0];
-  const hash = uid.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return CONFIG.AVATAR_COLORS[hash % CONFIG.AVATAR_COLORS.length];
+  let hash = 0;
+  for (let i = 0; i < uid.length; i++) {
+    hash = uid.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % CONFIG.AVATAR_COLORS.length;
+  return CONFIG.AVATAR_COLORS[index];
 }
 
-/**
- * Render default avatar (colored circle with initial)
- */
 function renderDefaultAvatar(containerEl, firstName, uid) {
-  const bg = getAvatarColor(uid);
-  const initial = getAvatarInitial(firstName);
-  containerEl.style.backgroundColor = bg;
+  if (!containerEl) return;
+  containerEl.style.backgroundColor = getAvatarColor(uid);
   containerEl.style.color = '#ffffff';
-  containerEl.style.width = '40px';
-  containerEl.style.height = '40px';
-  containerEl.style.borderRadius = '50%';
   containerEl.style.display = 'flex';
   containerEl.style.alignItems = 'center';
   containerEl.style.justifyContent = 'center';
-  containerEl.style.fontSize = '18px';
   containerEl.style.fontWeight = 'bold';
-  containerEl.textContent = initial;
+  containerEl.textContent = getAvatarInitial(firstName);
 }
 
 /**
- * Debounce function
+ * Helper functions
  */
 function debounce(fn, delay = 300) {
   let timeoutId;
   return function(...args) {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
   };
 }
 
-/**
- * Truncate string to max length
- */
 function truncate(str, max = 60) {
+  if (!str) return '';
   return str.length > max ? str.substring(0, max) + '...' : str;
 }
 
-/**
- * Sanitize filename
- */
 function sanitizeFileName(name) {
   return name.replace(/[^a-zA-Z0-9ก-๙._-]/g, '_');
 }
 
-/**
- * Format time ago
- * Input: ISO datetime string
- * Output: "เพิ่งเมื่อกี้", "5 นาทีที่แล้ว", etc.
- */
 function timeAgo(isoString) {
   if (!isoString) return '';
   const now = new Date();
   const date = new Date(isoString);
   const seconds = Math.floor((now - date) / 1000);
 
-  if (seconds < 60) return 'เพิ่งเมื่อกี้';
-  if (seconds < 3600) {
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes} นาทีที่แล้ว`;
-  }
-  if (seconds < 86400) {
-    const hours = Math.floor(seconds / 3600);
-    return `${hours} ชั่วโมงที่แล้ว`;
-  }
+  if (seconds < 60) return 'เมื่อสักครู่';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} นาทีที่แล้ว`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} ชั่วโมงที่แล้ว`;
   if (seconds < 172800) return 'เมื่อวาน';
-
-  const days = Math.floor(seconds / 86400);
-  return `${days} วันที่แล้ว`;
+  return formatThaiDate(isoString.split('T')[0]);
 }
 
-/**
- * Get query parameter from URL
- */
 function getQueryParam(param) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(param);
+  return new URLSearchParams(window.location.search).get(param);
 }
 
-/**
- * Set query parameter in URL
- */
 function setQueryParam(param, value) {
   const params = new URLSearchParams(window.location.search);
   params.set(param, value);
   window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
 }
 
-/**
- * Check if user is on mobile
- */
 function isMobile() {
   return window.innerWidth < 768;
 }
 
-/**
- * Format currency (Thai Baht)
- */
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('th-TH', {
-    style: 'currency',
-    currency: 'THB'
-  }).format(amount);
+  return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount);
 }
 
 /**
- * Calculate business days between two dates (skip weekends)
+ * Business Day Calculations
  */
 function calculateBusinessDays(startDate, endDate) {
   let count = 0;
   const current = new Date(startDate);
-  
   while (current <= endDate) {
-    const dayOfWeek = current.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip Sunday (0) and Saturday (6)
-      count++;
-    }
+    const day = current.getDay();
+    if (day !== 0 && day !== 6) count++;
     current.setDate(current.getDate() + 1);
   }
-  
   return count;
 }
 
-/**
- * Add business days to a date
- */
 function addBusinessDays(date, days) {
-  let count = 0;
-  const result = new Date(date);
-  
-  while (count < days) {
+  let result = new Date(date);
+  let added = 0;
+  while (added < days) {
     result.setDate(result.getDate() + 1);
-    const dayOfWeek = result.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      count++;
-    }
+    if (result.getDay() !== 0 && result.getDay() !== 6) added++;
   }
-  
   return result;
 }
 
 /**
- * Check if date is in the past
+ * Date Comparisons
  */
 function isPastDate(isoString) {
-  const date = new Date(isoString + 'T00:00:00Z');
+  const date = new Date(isoString);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return date < today;
 }
 
-/**
- * Check if date is today
- */
 function isToday(isoString) {
-  const date = new Date(isoString + 'T00:00:00Z');
+  const date = new Date(isoString);
   const today = new Date();
   return date.toDateString() === today.toDateString();
 }
 
 /**
- * Copy text to clipboard
+ * Misc Utilities
  */
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
-    showToast('คัดลอกสำเร็จ', 'success');
+    showToast('คัดลอกลงคลิปบอร์ดแล้ว', 'success');
   } catch (err) {
     showToast('ไม่สามารถคัดลอกได้', 'error');
   }
 }
 
-/**
- * Generate unique ID
- */
 function generateUID() {
   return 'uid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-/**
- * Parse JSON safely
- */
 function safeParseJSON(str, fallback = null) {
   try {
     return JSON.parse(str);
