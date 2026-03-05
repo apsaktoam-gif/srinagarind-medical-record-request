@@ -2,15 +2,17 @@
 // Authentication Module
 // ═══════════════════════════════════════════════════════════════════
 
+// ย้ายตัวแปรขึ้นมาด้านบนสุดเพื่อป้องกัน Error 'Cannot access before initialization'
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(CONFIG.firebaseConfig);
 const auth = firebase.auth();
 
 // Login attempt tracking for rate limiting
 let loginAttempts = 0;
 let loginLockTime = null;
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 /**
  * Check if login is locked due to too many attempts
@@ -106,8 +108,9 @@ async function loginWithGoogle() {
     // Get ID token
     const idToken = await user.getIdToken();
     
-    // Check email status
+    // Check email status (ผ่าน API ที่คุณเขียนไว้ใน api.js)
     const result_check = await api.checkEmail(email);
+    
     if (!result_check) {
       await auth.signOut();
       hideLoading();
@@ -115,7 +118,9 @@ async function loginWithGoogle() {
     }
     
     // Update last login (fire-and-forget)
-    api.updateLastLogin(email);
+    if(api.updateLastLogin) {
+       api.updateLastLogin(email);
+    }
     
     // Route after login
     routeAfterLogin(result_check);
@@ -142,13 +147,13 @@ async function loginWithGoogle() {
 function routeAfterLogin(userStatus) {
   // User doesn't exist in system
   if (!userStatus.exists) {
-    window.location.href = '/register.html';
+    window.location.href = 'register.html';
     return;
   }
   
   // User pending approval
   if (userStatus.status === 'pending') {
-    window.location.href = '/waiting.html';
+    window.location.href = 'waiting.html';
     return;
   }
   
@@ -168,24 +173,24 @@ function routeAfterLogin(userStatus) {
   
   // User approved but profile incomplete
   if (userStatus.status === 'approved' && !userStatus.profileComplete) {
-    window.location.href = '/profile-setup.html';
+    window.location.href = 'profile-setup.html';
     return;
   }
   
   // User approved but onboarding incomplete
   if (userStatus.status === 'approved' && !userStatus.onboardingComplete) {
-    window.location.href = '/onboarding.html';
+    window.location.href = 'onboarding.html';
     return;
   }
   
   // Admin or Staff
   if (userStatus.role === 'admin' || userStatus.role === 'staff') {
-    window.location.href = '/admin/index.html';
+    window.location.href = 'admin/index.html';
     return;
   }
   
   // Regular user
-  window.location.href = '/dashboard.html';
+  window.location.href = 'dashboard.html';
 }
 
 /**
@@ -214,7 +219,7 @@ function showRejectionMessage(reason) {
 function requireAuth() {
   auth.onAuthStateChanged(user => {
     if (!user) {
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
     }
   });
 }
@@ -225,13 +230,15 @@ function requireAuth() {
 async function requireAdmin() {
   auth.onAuthStateChanged(async user => {
     if (!user) {
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
       return;
     }
     
-    const profile = await api.getProfile();
-    if (!profile || profile.role !== 'admin') {
-      window.location.href = '/dashboard.html';
+    if (typeof api !== 'undefined' && api.getProfile) {
+        const profile = await api.getProfile();
+        if (!profile || profile.role !== 'admin') {
+          window.location.href = 'dashboard.html';
+        }
     }
   });
 }
@@ -242,13 +249,15 @@ async function requireAdmin() {
 async function requireStaff() {
   auth.onAuthStateChanged(async user => {
     if (!user) {
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
       return;
     }
     
-    const profile = await api.getProfile();
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
-      window.location.href = '/dashboard.html';
+    if (typeof api !== 'undefined' && api.getProfile) {
+        const profile = await api.getProfile();
+        if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+          window.location.href = 'dashboard.html';
+        }
     }
   });
 }
@@ -284,7 +293,7 @@ async function logout() {
     await auth.signOut();
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = '/index.html';
+    window.location.href = 'index.html';
   } catch (error) {
     console.error('Logout error:', error);
     showToast('เกิดข้อผิดพลาดในการออกจากระบบ', 'error');
