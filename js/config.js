@@ -13,7 +13,7 @@ const firebaseConfig = {
   appId: "1:662770268611:web:848ed2a1982e02f5ee2576"
 };
 
-// Google Apps Script Web App URL (ต้องแก้ไขหลัง deploy)
+// Google Apps Script Web App URL
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwSmXOFhPHu6DFyC0kuhj9sQjYSu-YwS0p8vWVy61vlzlq-TH9BrI7fl4mtlbUH-rmY/exec';
 
 // Allowed email domains
@@ -27,20 +27,13 @@ const MAX_FILE_SIZE_MB = 10;
 const MAX_FILES = 5;
 const MAX_PATIENTS = 20;
 
-// SLA defaults (will be overridden by settings from backend)
+// SLA defaults
 const DEFAULT_SLA_NORMAL_DAYS = 3;
 const DEFAULT_SLA_URGENT_DAYS = 1;
 
 // Color palette for avatars
 const AVATAR_COLORS = [
-  '#1a56db', // KKU Blue
-  '#047481', // Teal
-  '#057a55', // Success
-  '#9f580a', // Warning
-  '#c81e1e', // Danger
-  '#5521b5', // Purple
-  '#0e9f6e', // Green
-  '#d61f69'  // Pink
+  '#1a56db', '#047481', '#057a55', '#9f580a', '#c81e1e', '#5521b5', '#0e9f6e', '#d61f69'
 ];
 
 // Status colors mapping
@@ -67,84 +60,50 @@ const NOTIFICATION_TYPES = {
   ANNOUNCEMENT: 'announcement'
 };
 
-// Request types
-const REQUEST_TYPES = {
-  IPD: 'IPD',
-  OPD: 'OPD'
-};
+const REQUEST_TYPES = { IPD: 'IPD', OPD: 'OPD' };
 
-// Document types for IPD
 const IPD_DOCUMENTS = [
-  'ใบสรุปการรักษา (Discharge Summary)',
-  'ผลการตรวจทางห้องปฏิบัติการ (Lab Results)',
-  'ผลภาพรังสีวิทยา (X-Ray / CT / MRI / Ultrasound)',
-  'ใบสั่งยา (Prescription)',
-  'บันทึกการพยาบาล (Nursing Notes)',
-  'บันทึกการผ่าตัด (Operative Notes)',
-  'บันทึกวิสัญญี (Anesthesia Record)',
-  'ผลพยาธิวิทยา (Pathology Report)',
-  'ใบรับรองแพทย์ (Medical Certificate)',
-  'เวชระเบียนทั้งหมด (Complete Record)'
+  'ใบสรุปการรักษา (Discharge Summary)', 'ผลการตรวจทางห้องปฏิบัติการ (Lab Results)', 
+  'ผลภาพรังสีวิทยา (X-Ray / CT / MRI / Ultrasound)', 'ใบสั่งยา (Prescription)', 
+  'บันทึกการพยาบาล (Nursing Notes)', 'บันทึกการผ่าตัด (Operative Notes)', 
+  'บันทึกวิสัญญี (Anesthesia Record)', 'ผลพยาธิวิทยา (Pathology Report)', 
+  'ใบรับรองแพทย์ (Medical Certificate)', 'เวชระเบียนทั้งหมด (Complete Record)'
 ];
 
-// Document types for OPD
 const OPD_DOCUMENTS = [
-  'บันทึกการตรวจรักษา (OPD Notes)',
-  'ผลการตรวจทางห้องปฏิบัติการ (Lab Results)',
-  'ผลภาพรังสีวิทยา (X-Ray / CT / MRI / Ultrasound)',
-  'ใบสั่งยา (Prescription)',
-  'บันทึกการพยาบาล (Nursing Notes)',
-  'ใบรับรองแพทย์ (Medical Certificate)',
-  'ผลทดสอบพิเศษ (EEG / EMG / ฯลฯ)',
-  'เวชระเบียนทั้งหมด (Complete Record)'
+  'บันทึกการตรวจรักษา (OPD Notes)', 'ผลการตรวจทางห้องปฏิบัติการ (Lab Results)', 
+  'ผลภาพรังสีวิทยา (X-Ray / CT / MRI / Ultrasound)', 'ใบสั่งยา (Prescription)', 
+  'บันทึกการพยาบาล (Nursing Notes)', 'ใบรับรองแพทย์ (Medical Certificate)', 
+  'ผลทดสอบพิเศษ (EEG / EMG / ฯลฯ)', 'เวชระเบียนทั้งหมด (Complete Record)'
 ];
 
-// Request purposes
 const REQUEST_PURPOSES = [
-  'เพื่อการรักษาต่อเนื่อง',
-  'เพื่อการวิจัย',
-  'เพื่อการศึกษา',
-  'เพื่อประกันภัย / ประกันสังคม',
-  'เพื่อกฎหมาย / คดีความ',
-  'เพื่อส่งต่อผู้ป่วย (Refer)',
-  'เพื่อตรวจสอบคุณภาพ / Audit',
-  'อื่นๆ'
+  'เพื่อการรักษาต่อเนื่อง', 'เพื่อการวิจัย', 'เพื่อการศึกษา', 
+  'เพื่อประกันภัย / ประกันสังคม', 'เพื่อกฎหมาย / คดีความ', 
+  'เพื่อส่งต่อผู้ป่วย (Refer)', 'เพื่อตรวจสอบคุณภาพ / Audit', 'อื่นๆ'
 ];
 
-// Patient relationships
 const PATIENT_RELATIONSHIPS = [
-  'แพทย์ผู้รักษา',
-  'พยาบาลผู้ดูแล',
-  'ผู้ป่วยตนเอง',
-  'บิดา/มารดา',
-  'คู่สมรส',
-  'บุตร',
-  'ญาติ',
-  'ทนายความ / ผู้รับมอบอำนาจ',
-  'เจ้าหน้าที่ประกันภัย',
-  'อื่นๆ'
+  'แพทย์ผู้รักษา', 'พยาบาลผู้ดูแล', 'ผู้ป่วยตนเอง', 'บิดา/มารดา', 
+  'คู่สมรส', 'บุตร', 'ญาติ', 'ทนายความ / ผู้รับมอบอำนาจ', 
+  'เจ้าหน้าที่ประกันภัย', 'อื่นๆ'
 ];
 
-// Thai months
 const THAI_MONTHS = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
 ];
 
-// Thai days of week
 const THAI_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
-// Seed admin emails
 const SEED_ADMINS = ['toam2532@gmail.com', 'ritttu@kku.ac.th'];
-
-// Hospital info
 const HOSPITAL_NAME = 'โรงพยาบาลศรีนครินทร์';
 const DEPARTMENT_NAME = 'งานเวชระเบียนและสถิติ';
 const SYSTEM_NAME = 'ระบบคำขอข้อมูลเวชระเบียน';
 
 // Export all configurations
 window.CONFIG = {
-  firebaseConfig, // แก้ไขบรรทัดนี้แล้ว
+  firebaseConfig,
   APPS_SCRIPT_URL,
   ALLOWED_DOMAINS,
   POLLING_NOTIFY_MS,
