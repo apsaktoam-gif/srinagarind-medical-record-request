@@ -2,20 +2,16 @@
 // Authentication Module
 // ═══════════════════════════════════════════════════════════════════
 
-// ย้ายตัวแปรขึ้นมาด้านบนสุดเพื่อป้องกัน Error 'Cannot access before initialization'
+// ย้ายตัวแปรตั้งค่าขึ้นมาด้านบนสุดเพื่อป้องกัน Error
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
-// Initialize Firebase
+// Initialize Firebase โดยอ้างอิงจาก window.CONFIG
 firebase.initializeApp(CONFIG.firebaseConfig);
 const auth = firebase.auth();
 
-// Login attempt tracking for rate limiting
-let loginAttempts = 0;
-let loginLockTime = null;
-
 /**
- * Check if login is locked due to too many attempts
+ * ตรวจสอบว่าการเข้าสู่ระบบถูกระงับชั่วคราวหรือไม่
  */
 function isLoginLocked() {
   const lockData = localStorage.getItem('loginLock');
@@ -29,11 +25,11 @@ function isLoginLocked() {
     return false;
   }
   
-  return true;
+  return attempts >= MAX_LOGIN_ATTEMPTS;
 }
 
 /**
- * Get remaining lock time in minutes
+ * คำนวณเวลาที่เหลือของการล็อก (นาที)
  */
 function getLoginLockRemainingTime() {
   const lockData = localStorage.getItem('loginLock');
@@ -46,7 +42,7 @@ function getLoginLockRemainingTime() {
 }
 
 /**
- * Record failed login attempt
+ * บันทึกประวัติการเข้าสู่ระบบที่ล้มเหลว
  */
 function recordFailedLoginAttempt() {
   let lockData = localStorage.getItem('loginLock');
@@ -66,17 +62,16 @@ function recordFailedLoginAttempt() {
 }
 
 /**
- * Clear login lock
+ * ล้างสถานะการล็อก
  */
 function clearLoginLock() {
   localStorage.removeItem('loginLock');
 }
 
 /**
- * Login with Google
+ * เข้าสู่ระบบด้วย Google
  */
 async function loginWithGoogle() {
-  // Check if login is locked
   if (isLoginLocked()) {
     const remaining = getLoginLockRemainingTime();
     showToast(`บัญชีถูกล็อก กรุณาลองใหม่ใน ${remaining} นาที`, 'error');
@@ -93,7 +88,7 @@ async function loginWithGoogle() {
     const user = result.user;
     const email = user.email;
     
-    // Validate email domain
+    // ตรวจสอบ Domain ตามที่กำหนดไว้ใน CONFIG
     const domain = email.split('@')[1];
     if (!CONFIG.ALLOWED_DOMAINS.includes(domain)) {
       await auth.signOut();
@@ -102,27 +97,21 @@ async function loginWithGoogle() {
       return;
     }
     
-    // Clear login lock on successful login
     clearLoginLock();
     
-    // Get ID token
-    const idToken = await user.getIdToken();
-    
-    // Check email status (ผ่าน API ที่คุณเขียนไว้ใน api.js)
+    // ตรวจสอบสถานะอีเมลผ่าน API
     const result_check = await api.checkEmail(email);
-    
     if (!result_check) {
       await auth.signOut();
       hideLoading();
       return;
     }
     
-    // Update last login (fire-and-forget)
-    if(api.updateLastLogin) {
-       api.updateLastLogin(email);
+    // อัปเดตเวลาเข้าใช้งานล่าสุด
+    if (api.updateLastLogin) {
+      api.updateLastLogin(email);
     }
     
-    // Route after login
     routeAfterLogin(result_check);
     
   } catch (error) {
@@ -142,59 +131,51 @@ async function loginWithGoogle() {
 }
 
 /**
- * Route user after successful login
+ * จัดการเส้นทางหลังเข้าสู่ระบบสำเร็จ
  */
 function routeAfterLogin(userStatus) {
-  // User doesn't exist in system
   if (!userStatus.exists) {
     window.location.href = 'register.html';
     return;
   }
   
-  // User pending approval
   if (userStatus.status === 'pending') {
     window.location.href = 'waiting.html';
     return;
   }
   
-  // User rejected
   if (userStatus.status === 'rejected') {
     showRejectionMessage(userStatus.rejectionReason);
     auth.signOut();
     return;
   }
   
-  // User suspended
   if (userStatus.status === 'suspended') {
     showToast('บัญชีของคุณถูกระงับ กรุณาติดต่อเจ้าหน้าที่', 'error');
     auth.signOut();
     return;
   }
   
-  // User approved but profile incomplete
   if (userStatus.status === 'approved' && !userStatus.profileComplete) {
     window.location.href = 'profile-setup.html';
     return;
   }
   
-  // User approved but onboarding incomplete
   if (userStatus.status === 'approved' && !userStatus.onboardingComplete) {
     window.location.href = 'onboarding.html';
     return;
   }
   
-  // Admin or Staff
   if (userStatus.role === 'admin' || userStatus.role === 'staff') {
     window.location.href = 'admin/index.html';
     return;
   }
   
-  // Regular user
   window.location.href = 'dashboard.html';
 }
 
 /**
- * Show rejection message
+ * แสดงข้อความเมื่อบัญชีไม่ได้รับการอนุมัติ
  */
 function showRejectionMessage(reason) {
   const modal = document.createElement('div');
@@ -213,8 +194,7 @@ function showRejectionMessage(reason) {
 }
 
 /**
- * Require authentication
- * Call this on every protected page
+ * บังคับให้ต้องล็อกอินก่อนเข้าถึงหน้าเพจ
  */
 function requireAuth() {
   auth.onAuthStateChanged(user => {
@@ -225,7 +205,7 @@ function requireAuth() {
 }
 
 /**
- * Require admin role
+ * บังคับสิทธิ์ Admin
  */
 async function requireAdmin() {
   auth.onAuthStateChanged(async user => {
@@ -235,16 +215,16 @@ async function requireAdmin() {
     }
     
     if (typeof api !== 'undefined' && api.getProfile) {
-        const profile = await api.getProfile();
-        if (!profile || profile.role !== 'admin') {
-          window.location.href = 'dashboard.html';
-        }
+      const profile = await api.getProfile();
+      if (!profile || profile.role !== 'admin') {
+        window.location.href = 'dashboard.html';
+      }
     }
   });
 }
 
 /**
- * Require staff or admin role
+ * บังคับสิทธิ์ Staff หรือ Admin
  */
 async function requireStaff() {
   auth.onAuthStateChanged(async user => {
@@ -254,25 +234,25 @@ async function requireStaff() {
     }
     
     if (typeof api !== 'undefined' && api.getProfile) {
-        const profile = await api.getProfile();
-        if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
-          window.location.href = 'dashboard.html';
-        }
+      const profile = await api.getProfile();
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+        window.location.href = 'dashboard.html';
+      }
     }
   });
 }
 
 /**
- * Get current user's ID token
+ * ดึง ID Token ปัจจุบัน
  */
 async function getIdToken() {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
-  return user.getIdToken(false);
+  return user.getIdToken(true); // รีเฟรช Token เสมอเพื่อความปลอดภัย
 }
 
 /**
- * Auto refresh token every 55 minutes
+ * อัปเดต Token อัตโนมัติทุก 55 นาที
  */
 setInterval(async () => {
   if (auth.currentUser) {
@@ -285,7 +265,7 @@ setInterval(async () => {
 }, 55 * 60 * 1000);
 
 /**
- * Logout
+ * ออกจากระบบ
  */
 async function logout() {
   showLoading();
@@ -301,68 +281,22 @@ async function logout() {
   }
 }
 
-/**
- * Get current user email
- */
+// ─────────────────────────────────────────────────────────────
+// ฟังก์ชันอำนวยความสะดวกในการจัดการข้อมูลผู้ใช้
+// ─────────────────────────────────────────────────────────────
+
 function getCurrentUserEmail() {
   const user = auth.currentUser;
   return user ? user.email : null;
 }
 
-/**
- * Get current user UID
- */
-function getCurrentUserUID() {
-  const user = auth.currentUser;
-  return user ? user.uid : null;
-}
-
-/**
- * Check if user is authenticated
- */
 function isAuthenticated() {
   return auth.currentUser !== null;
 }
 
-/**
- * Get current user display name
- */
-function getCurrentUserDisplayName() {
-  return localStorage.getItem('userDisplayName') || 'ผู้ใช้';
-}
-
-/**
- * Get current user role
- */
-function getCurrentUserRole() {
-  return localStorage.getItem('userRole') || 'user';
-}
-
-/**
- * Get current user avatar URL
- */
-function getCurrentUserAvatarUrl() {
-  return localStorage.getItem('avatarUrl') || '';
-}
-
-/**
- * Update local user data
- */
 function updateLocalUserData(userData) {
   if (userData.email) localStorage.setItem('userEmail', userData.email);
   if (userData.displayName) localStorage.setItem('userDisplayName', userData.displayName);
   if (userData.role) localStorage.setItem('userRole', userData.role);
-  if (userData.avatarUrl) localStorage.setItem('avatarUrl', userData.avatarUrl);
   if (userData.uid) localStorage.setItem('userId', userData.uid);
-}
-
-/**
- * Clear local user data
- */
-function clearLocalUserData() {
-  localStorage.removeItem('userEmail');
-  localStorage.removeItem('userDisplayName');
-  localStorage.removeItem('userRole');
-  localStorage.removeItem('avatarUrl');
-  localStorage.removeItem('userId');
 }
