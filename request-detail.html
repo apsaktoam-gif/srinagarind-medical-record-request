@@ -286,18 +286,16 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <a href="/dashboard.html" class="back-btn">← กลับไปแดชบอร์ด</a>
+        <a href="dashboard.html" class="back-btn">← กลับไปแดชบอร์ด</a>
         <h1 id="requestId">REQ-2568-0000</h1>
       </div>
       <div id="statusBadge" class="status-badge"></div>
     </div>
 
-    <!-- Status Timeline -->
     <div class="status-timeline">
       <div class="timeline" id="statusTimeline"></div>
     </div>
 
-    <!-- Quick Info -->
     <div class="info-grid">
       <div class="info-card">
         <div class="info-label">ประเภท</div>
@@ -317,25 +315,20 @@
       </div>
     </div>
 
-    <!-- Result Section (if completed) -->
     <div id="resultSection" style="display: none;"></div>
 
-    <!-- Rejection Section (if rejected) -->
     <div id="rejectionSection" style="display: none;"></div>
 
-    <!-- Patients -->
     <div class="section-card">
       <div class="section-title">👥 ข้อมูลผู้ป่วย</div>
       <div id="patientsList"></div>
     </div>
 
-    <!-- Documents -->
     <div class="section-card">
       <div class="section-title">📄 เอกสารที่ขอ</div>
       <div id="documentsList"></div>
     </div>
 
-    <!-- Details -->
     <div class="section-card">
       <div class="section-title">📋 รายละเอียด</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
@@ -359,18 +352,18 @@
       <div id="staffNoteSection" style="display: none; margin-top: 1.5rem;"></div>
     </div>
 
-    <!-- Actions -->
     <div class="section-card">
       <div class="action-buttons">
-        <button class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">← กลับ</button>
+        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">← กลับ</button>
         <button id="cancelBtn" class="btn btn-danger" onclick="cancelRequest()" style="display: none;">🚫 ยกเลิกคำร้อง</button>
         <button id="downloadBtn" class="btn btn-primary" onclick="downloadRequest()" style="display: none;">📥 ดาวน์โหลด</button>
       </div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+  
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
@@ -380,7 +373,7 @@
 
     const requestId = getQueryParam('id');
     if (!requestId) {
-      window.location.href = '/dashboard.html';
+      window.location.href = 'dashboard.html';
     }
 
     async function loadRequest() {
@@ -390,7 +383,7 @@
 
       if (!request) {
         showToast('ไม่พบคำร้อง', 'error');
-        setTimeout(() => window.location.href = '/dashboard.html', 2000);
+        setTimeout(() => window.location.href = 'dashboard.html', 2000);
         return;
       }
 
