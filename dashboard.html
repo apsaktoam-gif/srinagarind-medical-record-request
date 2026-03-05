@@ -290,7 +290,6 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Navbar -->
   <div class="navbar">
     <div class="navbar-brand">
       🏥 ระบบเวชระเบียน
@@ -314,16 +313,14 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="container">
     <div class="dashboard-header">
       <h1>👋 สวัสดี, <span id="displayName">ผู้ใช้</span></h1>
       <p>ยินดีต้อนรับกลับมาที่ระบบคำขอข้อมูลเวชระเบียน</p>
     </div>
 
-    <!-- Quick Actions -->
     <div class="quick-actions">
-      <div class="action-card" onclick="window.location.href='/request-form.html'">
+      <div class="action-card" onclick="window.location.href='submit-request.html'">
         <div class="action-icon">📝</div>
         <h3>ยื่นคำร้องใหม่</h3>
         <p>ยื่นคำร้องข้อมูลเวชระเบียน</p>
@@ -335,20 +332,19 @@
         <p>ตรวจสอบคำร้องทั้งหมด</p>
       </div>
 
-      <div class="action-card" onclick="window.location.href='/notifications.html'">
+      <div class="action-card" onclick="window.location.href='notifications.html'">
         <div class="action-icon">🔔</div>
         <h3>การแจ้งเตือน</h3>
         <p>ดูการแจ้งเตือนทั้งหมด</p>
       </div>
 
-      <div class="action-card" onclick="window.location.href='/profile-setup.html'">
+      <div class="action-card" onclick="window.location.href='profile-setup.html'">
         <div class="action-icon">👤</div>
         <h3>โปรไฟล์</h3>
         <p>แก้ไขข้อมูลโปรไฟล์</p>
       </div>
     </div>
 
-    <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-number" id="totalRequests">0</div>
@@ -371,11 +367,10 @@
       </div>
     </div>
 
-    <!-- Requests Section -->
     <div class="requests-section">
       <div class="requests-header">
         <h2>📋 คำร้องของฉัน</h2>
-        <button class="btn btn-primary" onclick="window.location.href='/request-form.html'">+ ยื่นคำร้องใหม่</button>
+        <button class="btn btn-primary" onclick="window.location.href='submit-request.html'">+ ยื่นคำร้องใหม่</button>
       </div>
 
       <div class="filter-tabs">
@@ -389,8 +384,9 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+  
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
@@ -405,24 +401,28 @@
     async function loadDashboard() {
       showLoading();
 
-      // Load profile
-      const profile = await api.getProfile();
-      if (profile) {
-        document.getElementById('displayName').textContent = profile.firstName || 'ผู้ใช้';
-        updateLocalUserData(profile);
+      try {
+        // Load profile
+        const profile = await api.getProfile();
+        if (profile) {
+          document.getElementById('displayName').textContent = profile.firstName || 'ผู้ใช้';
+          updateLocalUserData(profile);
+        }
+
+        // Load requests
+        const requests = await api.getMyRequests();
+        allRequests = requests || [];
+
+        // Calculate stats
+        updateStats();
+
+        // Render requests
+        renderRequests(allRequests);
+      } catch (error) {
+        console.error('Dashboard load error:', error);
+      } finally {
+        hideLoading();
       }
-
-      // Load requests
-      const requests = await api.getMyRequests();
-      allRequests = requests || [];
-
-      // Calculate stats
-      updateStats();
-
-      // Render requests
-      renderRequests(allRequests);
-
-      hideLoading();
     }
 
     function updateStats() {
@@ -467,7 +467,7 @@
       }
 
       container.innerHTML = requests.map(req => `
-        <div class="request-item" onclick="window.location.href='/request-detail.html?id=${req.requestId}'">
+        <div class="request-item" onclick="window.location.href='request-detail.html?id=${req.requestId}'">
           <div class="request-header">
             <span class="request-id">${req.requestId}</span>
             <span class="request-status ${formatStatus(req.status).bg} ${formatStatus(req.status).text}">
@@ -476,9 +476,8 @@
           </div>
           <div class="request-meta">
             <span>📋 ${req.requestType}</span>
-            <span>👥 ${req.patients.length} HN</span>
+            <span>👥 ${req.patients ? req.patients.length : 0} HN</span>
             <span>📅 ${formatThaiDate(req.createdAt)}</span>
-            <span>⏰ ${timeAgo(req.createdAt)}</span>
           </div>
           <div class="request-note">
             ${req.additionalNote ? '💬 ' + truncate(req.additionalNote, 50) : ''}
@@ -489,11 +488,11 @@
 
     function showUserMenu() {
       showModal('โปรไฟล์ผู้ใช้', 'ต้องการแก้ไขโปรไฟล์หรือไม่?', () => {
-        window.location.href = '/profile-setup.html';
+        window.location.href = 'profile-setup.html';
       }, 'แก้ไขโปรไฟล์');
     }
 
-    // Load on page load
+    // Initialize
     loadDashboard();
   </script>
 </body>
