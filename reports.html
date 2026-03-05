@@ -231,40 +231,37 @@
   </div>
 
   <div class="admin-layout">
-    <!-- Sidebar -->
     <div class="admin-sidebar">
       <div class="admin-sidebar-brand">
         🏥 Admin Panel
       </div>
       <ul class="admin-sidebar-menu">
         <li class="admin-sidebar-item">
-          <a href="/admin/index.html" class="admin-sidebar-link">📊 แดชบอร์ด</a>
+          <a href="index.html" class="admin-sidebar-link">📊 แดชบอร์ด</a>
         </li>
         <li class="admin-sidebar-item">
-          <a href="/admin/requests.html" class="admin-sidebar-link">📋 จัดการคำร้อง</a>
+          <a href="requests.html" class="admin-sidebar-link">📋 จัดการคำร้อง</a>
         </li>
         <li class="admin-sidebar-item">
-          <a href="/admin/users.html" class="admin-sidebar-link">👥 จัดการผู้ใช้</a>
+          <a href="users.html" class="admin-sidebar-link">👥 จัดการผู้ใช้</a>
         </li>
         <li class="admin-sidebar-item">
-          <a href="/admin/reports.html" class="admin-sidebar-link active">📈 รายงาน</a>
+          <a href="reports.html" class="admin-sidebar-link active">📈 รายงาน</a>
         </li>
         <li class="admin-sidebar-item">
-          <a href="/admin/settings.html" class="admin-sidebar-link">⚙️ ตั้งค่า</a>
+          <a href="settings.html" class="admin-sidebar-link">⚙️ ตั้งค่า</a>
         </li>
         <li class="admin-sidebar-item">
-          <a href="/dashboard.html" class="admin-sidebar-link">🚪 ออกจากแอดมิน</a>
+          <a href="../dashboard.html" class="admin-sidebar-link">🚪 ออกจากแอดมิน</a>
         </li>
       </ul>
     </div>
 
-    <!-- Main Content -->
     <div class="admin-main">
       <div class="admin-header">
         <h1>📈 รายงาน</h1>
       </div>
 
-      <!-- Summary Report -->
       <div class="report-section">
         <div class="report-title">📊 สรุปภาพรวม</div>
         <div class="stats-grid">
@@ -287,7 +284,6 @@
         </div>
       </div>
 
-      <!-- Request Status Report -->
       <div class="report-section">
         <div class="report-title">📋 สถานะคำร้อง</div>
         <div class="report-filters">
@@ -322,7 +318,6 @@
         </div>
       </div>
 
-      <!-- Urgency Report -->
       <div class="report-section">
         <div class="report-title">⚡ รายงานความเร่งด่วน</div>
         <div class="table-container">
@@ -344,7 +339,6 @@
         </div>
       </div>
 
-      <!-- Top Requesters -->
       <div class="report-section">
         <div class="report-title">👥 ผู้ยื่นคำร้องมากที่สุด</div>
         <div class="table-container">
@@ -368,8 +362,9 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+  
   <script src="../js/config.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/auth.js"></script>
