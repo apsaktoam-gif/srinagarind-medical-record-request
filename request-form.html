@@ -253,7 +253,6 @@
     </div>
 
     <form id="requestForm" class="form-card">
-      <!-- Section 1: Request Type -->
       <div class="form-section-title">1️⃣ ประเภทคำร้อง</div>
 
       <div class="form-row">
@@ -277,7 +276,6 @@
         </div>
       </div>
 
-      <!-- Section 2: Patients -->
       <div class="form-section-title" style="margin-top: 2rem;">2️⃣ ข้อมูลผู้ป่วย</div>
 
       <div class="patient-list" id="patientList"></div>
@@ -292,12 +290,10 @@
         ✓ ระบบรองรับผู้ป่วยสูงสุด 20 ราย ต่อคำร้องเดียว
       </div>
 
-      <!-- Section 3: Documents -->
       <div class="form-section-title" style="margin-top: 2rem;">3️⃣ เอกสารที่ขอ</div>
 
       <div class="checkbox-group" id="documentsCheckbox"></div>
 
-      <!-- Section 4: Purpose -->
       <div class="form-section-title" style="margin-top: 2rem;">4️⃣ วัตถุประสงค์การขอ</div>
 
       <div class="form-group">
@@ -338,7 +334,6 @@
         <input type="text" id="relationshipDetail" name="relationshipDetail" placeholder="ระบุรายละเอียด">
       </div>
 
-      <!-- Section 5: Urgency -->
       <div class="form-section-title" style="margin-top: 2rem;">5️⃣ ความเร่งด่วน</div>
 
       <div class="urgency-options">
@@ -360,7 +355,6 @@
         <textarea id="urgencyReason" name="urgencyReason" placeholder="ระบุเหตุผลที่ต้องการเร่งด่วน"></textarea>
       </div>
 
-      <!-- Section 6: Additional Info -->
       <div class="form-section-title" style="margin-top: 2rem;">6️⃣ ข้อมูลเพิ่มเติม</div>
 
       <div class="form-group">
@@ -368,7 +362,6 @@
         <textarea id="additionalNote" name="additionalNote" placeholder="ระบุข้อมูลเพิ่มเติมหรือคำขอพิเศษ"></textarea>
       </div>
 
-      <!-- Consent -->
       <div class="consent-box">
         <p>📋 ยืนยันการให้ความยินยอม</p>
         <p>ข้อมูลของท่านจะถูกเก็บเป็นความลับตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล (PDPA)</p>
@@ -378,16 +371,16 @@
         </label>
       </div>
 
-      <!-- Actions -->
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">ยกเลิก</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">ยกเลิก</button>
         <button type="submit" class="btn btn-primary">ยื่นคำร้อง</button>
       </div>
     </form>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+  
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
@@ -537,7 +530,7 @@
       if (result) {
         showToast('ยื่นคำร้องสำเร็จ', 'success');
         setTimeout(() => {
-          window.location.href = '/request-detail.html?id=' + result.requestId;
+          window.location.href = 'request-detail.html?id=' + result.requestId;
         }, 1500);
       }
     });
