@@ -128,7 +128,7 @@
       margin: 0;
     }
     
-    footer {
+    <footer> {
       background-color: var(--surface);
       border-top: 1px solid var(--border);
       padding: 2rem;
@@ -139,12 +139,10 @@
   </style>
 </head>
 <body>
-  <!-- Loading Overlay -->
   <div id="loading-overlay" class="hidden">
     <div class="spinner"></div>
   </div>
 
-  <!-- Hero Section -->
   <div class="hero">
     <div class="container">
       <h1>🏥 ระบบคำขอข้อมูลเวชระเบียน</h1>
@@ -153,7 +151,6 @@
     </div>
   </div>
 
-  <!-- Features Section -->
   <div class="features">
     <div class="feature-card">
       <div class="feature-icon">📱</div>
@@ -192,7 +189,6 @@
     </div>
   </div>
 
-  <!-- Login Section -->
   <div class="login-section">
     <div class="login-container">
       <h2>เข้าสู่ระบบ</h2>
@@ -213,17 +209,14 @@
     </div>
   </div>
 
-  <!-- Footer -->
   <footer>
     <p>&copy; 2568 โรงพยาบาลศรีนครินทร์ มหาวิทยาลัยขอนแก่น | ระบบคำขอข้อมูลเวชระเบียน</p>
     <p>สำหรับข้อมูลเพิ่มเติม โปรดติดต่อ: <strong>งานเวชระเบียน</strong> โทร. <strong>0-4320-2000 ต่อ 1234</strong></p>
   </footer>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 
-  <!-- Scripts -->
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
