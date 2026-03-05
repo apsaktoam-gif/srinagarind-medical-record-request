@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ยื่นคำร้อง - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      color: var(--primary);
+    }
+
+    .form-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-row .form-group {
+      margin-bottom: 0;
+    }
+
+    .patient-list {
+      background-color: var(--background);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .patient-item {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .patient-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .patient-info {
+      flex: 1;
+    }
+
+    .patient-hn {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .patient-name {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .remove-btn {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .remove-btn:hover {
+      background-color: #a81818;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .checkbox-item:hover {
+      background-color: var(--background);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .checkbox-item label {
+      margin: 0;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .urgency-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .urgency-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .urgency-card:hover {
+      border-color: var(--primary);
+      background-color: var(--background);
+    }
+
+    .urgency-card input[type="radio"] {
+      margin-right: 0.5rem;
+    }
+
+    .urgency-card.selected {
+      border-color: var(--primary);
+      background-color: #e3f2fd;
+    }
+
+    .urgency-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .urgency-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .consent-box {
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+    }
+
+    .consent-box p {
+      color: var(--primary);
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+    }
+
+    .consent-box p:first-child {
+      margin-top: 0;
+      font-weight: 600;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    .add-patient-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all var(--transition-fast);
+    }
+
+    .add-patient-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .inline-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .inline-form input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .inline-form button {
+      padding: 0.75rem 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .form-row,
+      .urgency-options,
+      .checkbox-group {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1>📝 ยื่นคำร้องข้อมูลเวชระเบียน</h1>
+      <p>กรุณากรอกข้อมูลให้ครบถ้วน</p>
+    </div>
+
+    <form id="requestForm" class="form-card">
+      <!-- Section 1: Request Type -->
+      <div class="form-section-title">1️⃣ ประเภทคำร้อง</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="requestType">ประเภท <span class="required">*</span></label>
+          <select id="requestType" name="requestType" required>
+            <option value="">-- เลือกประเภท --</option>
+            <option value="IPD">เวชระเบียนผู้ป่วยใน (IPD)</option>
+            <option value="OPD">เวชระเบียนผู้ป่วยนอก (OPD)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="deliveryFormat">รูปแบบการส่งมอบ <span class="required">*</span></label>
+          <select id="deliveryFormat" name="deliveryFormat" required>
+            <option value="">-- เลือกรูปแบบ --</option>
+            <option value="digital">ดิจิทัล (ผ่านระบบ)</option>
+            <option value="printed">พิมพ์ (มารับที่โรงพยาบาล)</option>
+            <option value="both">ทั้งสองรูปแบบ</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section 2: Patients -->
+      <div class="form-section-title" style="margin-top: 2rem;">2️⃣ ข้อมูลผู้ป่วย</div>
+
+      <div class="patient-list" id="patientList"></div>
+
+      <div class="inline-form">
+        <input type="text" id="patientHN" placeholder="HN (เช่น AA1234)" maxlength="6">
+        <input type="text" id="patientName" placeholder="ชื่อ-นามสกุล">
+        <button type="button" class="add-patient-btn" onclick="addPatient()">+ เพิ่มผู้ป่วย</button>
+      </div>
+
+      <div class="form-help">
+        ✓ ระบบรองรับผู้ป่วยสูงสุด 20 ราย ต่อคำร้องเดียว
+      </div>
+
+      <!-- Section 3: Documents -->
+      <div class="form-section-title" style="margin-top: 2rem;">3️⃣ เอกสารที่ขอ</div>
+
+      <div class="checkbox-group" id="documentsCheckbox"></div>
+
+      <!-- Section 4: Purpose -->
+      <div class="form-section-title" style="margin-top: 2rem;">4️⃣ วัตถุประสงค์การขอ</div>
+
+      <div class="form-group">
+        <label for="purpose">วัตถุประสงค์ <span class="required">*</span></label>
+        <select id="purpose" name="purpose" required onchange="updatePurposeDetail()">
+          <option value="">-- เลือกวัตถุประสงค์ --</option>
+          <option value="personal">ใช้ส่วนตัว</option>
+          <option value="legal">เรื่องกฎหมาย</option>
+          <option value="insurance">ประกันภัย</option>
+          <option value="medical">เพื่อการรักษาต่อเนื่อง</option>
+          <option value="research">วิจัย</option>
+          <option value="other">อื่น ๆ</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="purposeDetailGroup" style="display: none;">
+        <label for="purposeDetail">โปรดระบุ</label>
+        <textarea id="purposeDetail" name="purposeDetail" placeholder="ระบุรายละเอียดเพิ่มเติม"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="relationship">ความสัมพันธ์กับผู้ป่วย <span class="required">*</span></label>
+        <select id="relationship" name="relationship" required onchange="updateRelationshipDetail()">
+          <option value="">-- เลือกความสัมพันธ์ --</option>
+          <option value="self">ตัวผู้ป่วยเอง</option>
+          <option value="parent">ผู้ปกครอง</option>
+          <option value="spouse">คู่สมรส</option>
+          <option value="child">บุตร</option>
+          <option value="sibling">พี่น้อง</option>
+          <option value="guardian">ผู้อุปการะ</option>
+          <option value="attorney">ทนายความ</option>
+          <option value="other">อื่น ๆ</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="relationshipDetailGroup" style="display: none;">
+        <label for="relationshipDetail">โปรดระบุ</label>
+        <input type="text" id="relationshipDetail" name="relationshipDetail" placeholder="ระบุรายละเอียด">
+      </div>
+
+      <!-- Section 5: Urgency -->
+      <div class="form-section-title" style="margin-top: 2rem;">5️⃣ ความเร่งด่วน</div>
+
+      <div class="urgency-options">
+        <div class="urgency-card" onclick="selectUrgency('normal', this)">
+          <input type="radio" name="urgency" value="normal" checked onchange="selectUrgency('normal', this.parentElement)">
+          <div class="urgency-title">ปกติ</div>
+          <div class="urgency-desc">เสร็จสิ้นภายใน 3 วันทำการ</div>
+        </div>
+
+        <div class="urgency-card" onclick="selectUrgency('urgent', this)">
+          <input type="radio" name="urgency" value="urgent" onchange="selectUrgency('urgent', this.parentElement)">
+          <div class="urgency-title">⚡ เร่งด่วน</div>
+          <div class="urgency-desc">เสร็จสิ้นภายใน 1 วันทำการ</div>
+        </div>
+      </div>
+
+      <div class="form-group" id="urgencyReasonGroup" style="display: none; margin-top: 1rem;">
+        <label for="urgencyReason">เหตุผลการเร่งด่วน <span class="required">*</span></label>
+        <textarea id="urgencyReason" name="urgencyReason" placeholder="ระบุเหตุผลที่ต้องการเร่งด่วน"></textarea>
+      </div>
+
+      <!-- Section 6: Additional Info -->
+      <div class="form-section-title" style="margin-top: 2rem;">6️⃣ ข้อมูลเพิ่มเติม</div>
+
+      <div class="form-group">
+        <label for="additionalNote">หมายเหตุ</label>
+        <textarea id="additionalNote" name="additionalNote" placeholder="ระบุข้อมูลเพิ่มเติมหรือคำขอพิเศษ"></textarea>
+      </div>
+
+      <!-- Consent -->
+      <div class="consent-box">
+        <p>📋 ยืนยันการให้ความยินยอม</p>
+        <p>ข้อมูลของท่านจะถูกเก็บเป็นความลับตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล (PDPA)</p>
+        <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+          <input type="checkbox" id="pdpaConsent" required>
+          <span>ฉันยอมรับนโยบายคุ้มครองข้อมูลส่วนบุคคล <span class="required">*</span></span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">ยกเลิก</button>
+        <button type="submit" class="btn btn-primary">ยื่นคำร้อง</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let patients = [];
+    let selectedDocuments = [];
+
+    // Load documents
+    async function loadDocuments() {
+      const docs = await api.getMasterData('documents');
+      if (docs) {
+        const container = document.getElementById('documentsCheckbox');
+        container.innerHTML = docs.map(doc => `
+          <div class="checkbox-item">
+            <input type="checkbox" value="${doc.value}" onchange="updateSelectedDocuments()">
+            <label>${doc.labelTH}</label>
+          </div>
+        `).join('');
+      }
+    }
+
+    loadDocuments();
+
+    function addPatient() {
+      const hn = document.getElementById('patientHN').value.trim();
+      const name = document.getElementById('patientName').value.trim();
+
+      if (!hn || !name) {
+        showToast('กรุณากรอก HN และชื่อผู้ป่วย', 'error');
+        return;
+      }
+
+      if (!validateHN(hn)) {
+        showToast('รูปแบบ HN ไม่ถูกต้อง (ต้องเป็น 2 ตัวอักษร + 4 ตัวเลข)', 'error');
+        return;
+      }
+
+      if (patients.some(p => p.hn === hn)) {
+        showToast('HN นี้มีอยู่แล้ว', 'error');
+        return;
+      }
+
+      if (patients.length >= 20) {
+        showToast('ผู้ป่วยเกินจำนวนสูงสุด 20 ราย', 'error');
+        return;
+      }
+
+      patients.push({ hn, name });
+      document.getElementById('patientHN').value = '';
+      document.getElementById('patientName').value = '';
+
+      renderPatients();
+    }
+
+    function removePatient(index) {
+      patients.splice(index, 1);
+      renderPatients();
+    }
+
+    function renderPatients() {
+      const container = document.getElementById('patientList');
+      if (patients.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin: 0;">ยังไม่มีผู้ป่วย</p>';
+        return;
+      }
+
+      container.innerHTML = patients.map((p, i) => `
+        <div class="patient-item">
+          <div class="patient-info">
+            <div class="patient-hn">${p.hn}</div>
+            <div class="patient-name">${p.name}</div>
+          </div>
+          <button type="button" class="remove-btn" onclick="removePatient(${i})">ลบ</button>
+        </div>
+      `).join('');
+    }
+
+    function updateSelectedDocuments() {
+      selectedDocuments = Array.from(document.querySelectorAll('#documentsCheckbox input:checked')).map(cb => cb.value);
+    }
+
+    function updatePurposeDetail() {
+      const purpose = document.getElementById('purpose').value;
+      document.getElementById('purposeDetailGroup').style.display = purpose === 'other' ? 'block' : 'none';
+    }
+
+    function updateRelationshipDetail() {
+      const relationship = document.getElementById('relationship').value;
+      document.getElementById('relationshipDetailGroup').style.display = relationship === 'other' ? 'block' : 'none';
+    }
+
+    function selectUrgency(urgency, element) {
+      document.querySelectorAll('.urgency-card').forEach(card => card.classList.remove('selected'));
+      element.classList.add('selected');
+      document.querySelector(`input[name="urgency"][value="${urgency}"]`).checked = true;
+
+      const reasonGroup = document.getElementById('urgencyReasonGroup');
+      reasonGroup.style.display = urgency === 'urgent' ? 'block' : 'none';
+    }
+
+    document.getElementById('requestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (patients.length === 0) {
+        showToast('กรุณาเพิ่มผู้ป่วยอย่างน้อย 1 ราย', 'error');
+        return;
+      }
+
+      updateSelectedDocuments();
+      if (selectedDocuments.length === 0) {
+        showToast('กรุณาเลือกเอกสารอย่างน้อย 1 รายการ', 'error');
+        return;
+      }
+
+      if (!document.getElementById('pdpaConsent').checked) {
+        showToast('กรุณายอมรับนโยบายคุ้มครองข้อมูล', 'error');
+        return;
+      }
+
+      const urgency = document.querySelector('input[name="urgency"]:checked').value;
+      if (urgency === 'urgent' && !document.getElementById('urgencyReason').value.trim()) {
+        showToast('กรุณาระบุเหตุผลการเร่งด่วน', 'error');
+        return;
+      }
+
+      showLoading();
+
+      const result = await api.submitRequest({
+        requestType: document.getElementById('requestType').value,
+        patients: patients,
+        requestedDocs: selectedDocuments,
+        additionalNote: document.getElementById('additionalNote').value.trim(),
+        purpose: document.getElementById('purpose').value,
+        purposeDetail: document.getElementById('purposeDetail').value.trim(),
+        relationship: document.getElementById('relationship').value,
+        relationshipDetail: document.getElementById('relationshipDetail').value.trim(),
+        deliveryFormat: document.getElementById('deliveryFormat').value,
+        urgency: urgency,
+        urgencyReason: document.getElementById('urgencyReason').value.trim()
+      });
+
+      hideLoading();
+
+      if (result) {
+        showToast('ยื่นคำร้องสำเร็จ', 'success');
+        setTimeout(() => {
+          window.location.href = '/request-detail.html?id=' + result.requestId;
+        }, 1500);
+      }
+    });
+
+    renderPatients();
+  </script>
+</body>
+</html>

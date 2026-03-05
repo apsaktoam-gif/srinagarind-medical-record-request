@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าโปรไฟล์ - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .page-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .page-header h1 {
+      color: var(--primary);
+    }
+    
+    .profile-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .avatar-section {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      background-color: var(--background);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      border: 2px solid var(--border);
+    }
+    
+    .avatar-upload {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .avatar-upload input[type="file"] {
+      display: none;
+    }
+    
+    .upload-btn {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all var(--transition-fast);
+    }
+    
+    .upload-btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .form-row .form-group {
+      margin-bottom: 0;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .progress-steps {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      justify-content: center;
+    }
+    
+    .step {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--background);
+      border: 2px solid var(--border);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .step.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    
+    .step.completed {
+      background-color: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1>ตั้งค่าโปรไฟล์</h1>
+      <p>กรุณาเพิ่มเติมข้อมูลโปรไฟล์ของท่าน</p>
+    </div>
+
+    <div class="progress-steps">
+      <div class="step completed">1</div>
+      <div class="step completed">2</div>
+      <div class="step active">3</div>
+    </div>
+
+    <div class="profile-card">
+      <div class="avatar-section">
+        <div class="avatar-preview" id="avatarPreview">📷</div>
+        <div class="avatar-upload">
+          <input type="file" id="avatarInput" accept="image/jpeg,image/png">
+          <button class="upload-btn" onclick="document.getElementById('avatarInput').click()">
+            📤 อัปโหลดรูป
+          </button>
+          <button class="upload-btn" onclick="removeAvatar()" style="background-color: #999;">
+            🗑️ ลบรูป
+          </button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          ขนาดไฟล์สูงสุด 2MB (JPG, PNG)
+        </p>
+      </div>
+
+      <form id="profileForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">ชื่อ <span class="required">*</span></label>
+            <input type="text" id="firstName" name="firstName" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">นามสกุล <span class="required">*</span></label>
+            <input type="text" id="lastName" name="lastName" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="occupation">อาชีพ <span class="required">*</span></label>
+          <select id="occupation" name="occupation" required>
+            <option value="">-- เลือกอาชีพ --</option>
+            <option value="doctor">แพทย์</option>
+            <option value="nurse">พยาบาล</option>
+            <option value="dentist">ทันตแพทย์</option>
+            <option value="pharmacist">เภสัชกร</option>
+            <option value="physiotherapist">นักกายภาพบำบัด</option>
+            <option value="other_medical">บุคลากรทางการแพทย์อื่น</option>
+            <option value="lawyer">ทนายความ</option>
+            <option value="insurance">บริษัทประกันภัย</option>
+            <option value="government">หน่วยงานรัฐ</option>
+            <option value="other">อื่น ๆ</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="position">ตำแหน่ง</label>
+            <input type="text" id="position" name="position" placeholder="เช่น หัวหน้าแผนก">
+          </div>
+          <div class="form-group">
+            <label for="department">หน่วยงาน/สถาบัน</label>
+            <input type="text" id="department" name="department" placeholder="เช่น โรงพยาบาลศรีนครินทร์">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">เบอร์โทรศัพท์ <span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" placeholder="0XX-XXXX-XXXX" required>
+          <div class="form-help">รูปแบบ: 0XX-XXXX-XXXX</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="skipProfileSetup()">ข้ามขั้นตอนนี้</button>
+          <button type="submit" class="btn btn-primary">บันทึกและดำเนินการต่อ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/upload.js"></script>
+  <script>
+    requireAuth();
+
+    let avatarFile = null;
+
+    // Load existing profile
+    async function loadProfile() {
+      const profile = await api.getProfile();
+      if (profile) {
+        document.getElementById('firstName').value = profile.firstName || '';
+        document.getElementById('lastName').value = profile.lastName || '';
+        document.getElementById('occupation').value = profile.occupation || '';
+        document.getElementById('position').value = profile.position || '';
+        document.getElementById('department').value = profile.department || '';
+        document.getElementById('phone').value = profile.phone || '';
+
+        if (profile.avatarUrl) {
+          document.getElementById('avatarPreview').innerHTML = `<img src="${profile.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+        }
+      }
+    }
+
+    loadProfile();
+
+    // Avatar upload
+    document.getElementById('avatarInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      avatarFile = file;
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        document.getElementById('avatarPreview').innerHTML = `<img src="${event.target.result}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function removeAvatar() {
+      avatarFile = null;
+      document.getElementById('avatarInput').value = '';
+      document.getElementById('avatarPreview').innerHTML = '📷';
+    }
+
+    // Form submit
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const occupation = document.getElementById('occupation').value;
+      const position = document.getElementById('position').value.trim();
+      const department = document.getElementById('department').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (!firstName || !lastName || !occupation || !phone) {
+        showToast('กรุณากรอกข้อมูลที่จำเป็นทั้งหมด', 'error');
+        return;
+      }
+
+      if (!validatePhone(phone)) {
+        showToast('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง', 'error');
+        return;
+      }
+
+      showLoading();
+
+      // Upload avatar if selected
+      if (avatarFile) {
+        await uploadAvatar(avatarFile);
+      }
+
+      // Update profile
+      const result = await api.updateProfile({
+        firstName,
+        lastName,
+        occupation,
+        position,
+        department,
+        phone
+      });
+
+      hideLoading();
+
+      if (result) {
+        showToast('บันทึกโปรไฟล์สำเร็จ', 'success');
+        setTimeout(() => {
+          window.location.href = '/onboarding.html';
+        }, 1500);
+      }
+    });
+
+    function skipProfileSetup() {
+      window.location.href = '/onboarding.html';
+    }
+  </script>
+</body>
+</html>

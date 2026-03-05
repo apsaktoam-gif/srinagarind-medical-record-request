@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายละเอียดคำร้อง - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .back-btn {
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .back-btn:hover {
+      color: var(--primary-dark);
+    }
+
+    .status-timeline {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .timeline {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+
+    .timeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .timeline-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--background);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .timeline-dot.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .timeline-dot.completed {
+      background-color: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .timeline-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .info-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .section-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .patient-item {
+      background-color: var(--background);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .patient-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .patient-hn {
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 80px;
+    }
+
+    .patient-name {
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    .doc-item {
+      background-color: var(--background);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .doc-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .doc-icon {
+      font-size: 1.2rem;
+    }
+
+    .doc-name {
+      flex: 1;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .result-section {
+      background-color: #dcfce7;
+      border-left: 4px solid var(--success);
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+    }
+
+    .result-section h3 {
+      color: var(--success);
+      margin-top: 0;
+    }
+
+    .result-link {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--success);
+      color: white;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+
+    .result-link:hover {
+      background-color: #046d4a;
+    }
+
+    .rejection-section {
+      background-color: #fee2e2;
+      border-left: 4px solid var(--danger);
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+    }
+
+    .rejection-section h3 {
+      color: var(--danger);
+      margin-top: 0;
+    }
+
+    .staff-note {
+      background-color: var(--background);
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin-top: 1rem;
+    }
+
+    .staff-note-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .staff-note-content {
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <a href="/dashboard.html" class="back-btn">← กลับไปแดชบอร์ด</a>
+        <h1 id="requestId">REQ-2568-0000</h1>
+      </div>
+      <div id="statusBadge" class="status-badge"></div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="status-timeline">
+      <div class="timeline" id="statusTimeline"></div>
+    </div>
+
+    <!-- Quick Info -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">ประเภท</div>
+        <div class="info-value" id="requestType">-</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">ความเร่งด่วน</div>
+        <div class="info-value" id="urgency">-</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">วันที่ยื่น</div>
+        <div class="info-value" id="createdDate">-</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">กำหนดเสร็จ</div>
+        <div class="info-value" id="slaDeadline">-</div>
+      </div>
+    </div>
+
+    <!-- Result Section (if completed) -->
+    <div id="resultSection" style="display: none;"></div>
+
+    <!-- Rejection Section (if rejected) -->
+    <div id="rejectionSection" style="display: none;"></div>
+
+    <!-- Patients -->
+    <div class="section-card">
+      <div class="section-title">👥 ข้อมูลผู้ป่วย</div>
+      <div id="patientsList"></div>
+    </div>
+
+    <!-- Documents -->
+    <div class="section-card">
+      <div class="section-title">📄 เอกสารที่ขอ</div>
+      <div id="documentsList"></div>
+    </div>
+
+    <!-- Details -->
+    <div class="section-card">
+      <div class="section-title">📋 รายละเอียด</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div>
+          <p><strong>วัตถุประสงค์:</strong> <span id="purpose">-</span></p>
+          <p><strong>ความสัมพันธ์:</strong> <span id="relationship">-</span></p>
+          <p><strong>รูปแบบการส่ง:</strong> <span id="deliveryFormat">-</span></p>
+        </div>
+        <div>
+          <p><strong>ผู้ยื่น:</strong> <span id="requesterName">-</span></p>
+          <p><strong>หน่วยงาน:</strong> <span id="requesterDept">-</span></p>
+          <p><strong>เบอร์โทร:</strong> <span id="requesterPhone">-</span></p>
+        </div>
+      </div>
+
+      <div id="additionalNoteSection" style="display: none; margin-top: 1.5rem;">
+        <p><strong>หมายเหตุ:</strong></p>
+        <div style="background-color: var(--background); padding: 1rem; border-radius: var(--radius-md); white-space: pre-wrap; word-break: break-word;" id="additionalNote"></div>
+      </div>
+
+      <div id="staffNoteSection" style="display: none; margin-top: 1.5rem;"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="section-card">
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">← กลับ</button>
+        <button id="cancelBtn" class="btn btn-danger" onclick="cancelRequest()" style="display: none;">🚫 ยกเลิกคำร้อง</button>
+        <button id="downloadBtn" class="btn btn-primary" onclick="downloadRequest()" style="display: none;">📥 ดาวน์โหลด</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    const requestId = getQueryParam('id');
+    if (!requestId) {
+      window.location.href = '/dashboard.html';
+    }
+
+    async function loadRequest() {
+      showLoading();
+      const request = await api.getRequest(requestId);
+      hideLoading();
+
+      if (!request) {
+        showToast('ไม่พบคำร้อง', 'error');
+        setTimeout(() => window.location.href = '/dashboard.html', 2000);
+        return;
+      }
+
+      // Header
+      document.getElementById('requestId').textContent = request.requestId;
+      const statusColor = formatStatus(request.status);
+      document.getElementById('statusBadge').className = `status-badge ${statusColor.bg} ${statusColor.text}`;
+      document.getElementById('statusBadge').textContent = request.status;
+
+      // Quick Info
+      document.getElementById('requestType').textContent = request.requestType;
+      document.getElementById('urgency').textContent = request.urgency === 'urgent' ? '⚡ เร่งด่วน' : 'ปกติ';
+      document.getElementById('createdDate').textContent = formatThaiDateTime(request.createdAt);
+      document.getElementById('slaDeadline').textContent = formatThaiDate(request.slaDeadline);
+
+      // Patients
+      const patientsList = document.getElementById('patientsList');
+      patientsList.innerHTML = request.patients.map(p => `
+        <div class="patient-item">
+          <div class="patient-hn">${p.hn}</div>
+          <div class="patient-name">${p.name}</div>
+        </div>
+      `).join('');
+
+      // Documents
+      const documentsList = document.getElementById('documentsList');
+      documentsList.innerHTML = request.requestedDocs.map(doc => `
+        <div class="doc-item">
+          <span class="doc-icon">📄</span>
+          <span class="doc-name">${doc}</span>
+        </div>
+      `).join('');
+
+      // Details
+      document.getElementById('purpose').textContent = request.purpose;
+      document.getElementById('relationship').textContent = request.relationship;
+      document.getElementById('deliveryFormat').textContent = request.deliveryFormat;
+      document.getElementById('requesterName').textContent = request.requesterName;
+      document.getElementById('requesterDept').textContent = request.requesterDepartment;
+      document.getElementById('requesterPhone').textContent = request.requesterPhone;
+
+      // Additional Note
+      if (request.additionalNote) {
+        document.getElementById('additionalNoteSection').style.display = 'block';
+        document.getElementById('additionalNote').textContent = request.additionalNote;
+      }
+
+      // Staff Note
+      if (request.staffNote) {
+        const staffNoteSection = document.getElementById('staffNoteSection');
+        staffNoteSection.innerHTML = `
+          <div class="staff-note">
+            <div class="staff-note-label">💬 หมายเหตุจากเจ้าหน้าที่</div>
+            <div class="staff-note-content">${request.staffNote}</div>
+          </div>
+        `;
+        staffNoteSection.style.display = 'block';
+      }
+
+      // Result Section
+      if (request.status === 'เสร็จสิ้น' && request.resultUrl) {
+        const resultSection = document.getElementById('resultSection');
+        resultSection.innerHTML = `
+          <div class="result-section">
+            <h3>✅ ข้อมูลของท่านพร้อมแล้ว</h3>
+            <p>คำร้องของท่านได้รับการประมวลผลเสร็จสิ้นแล้ว</p>
+            <a href="${request.resultUrl}" target="_blank" class="result-link">
+              📥 ${request.resultLabel || 'ดาวน์โหลดข้อมูล'}
+            </a>
+          </div>
+        `;
+        resultSection.style.display = 'block';
+      }
+
+      // Rejection Section
+      if (request.status === 'ปฏิเสธ' && request.rejectionReason) {
+        const rejectionSection = document.getElementById('rejectionSection');
+        rejectionSection.innerHTML = `
+          <div class="rejection-section">
+            <h3>❌ ไม่สามารถดำเนินการได้</h3>
+            <p><strong>เหตุผล:</strong> ${request.rejectionReason}</p>
+            <p>กรุณาติดต่อเจ้าหน้าที่เพื่อขอข้อมูลเพิ่มเติม</p>
+          </div>
+        `;
+        rejectionSection.style.display = 'block';
+      }
+
+      // Action buttons
+      if (request.status === 'รอดำเนินการ') {
+        document.getElementById('cancelBtn').style.display = 'inline-block';
+      }
+
+      if (request.status === 'เสร็จสิ้น' && request.resultUrl) {
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+      }
+
+      // Status Timeline
+      renderTimeline(request.status);
+    }
+
+    function renderTimeline(currentStatus) {
+      const statuses = ['รอดำเนินการ', 'กำลังดำเนินการ', 'เสร็จสิ้น'];
+      const statusMap = {
+        'รอดำเนินการ': 0,
+        'กำลังดำเนินการ': 1,
+        'เสร็จสิ้น': 2,
+        'ปฏิเสธ': 2
+      };
+
+      const currentIndex = statusMap[currentStatus] || 0;
+
+      const timeline = document.getElementById('statusTimeline');
+      timeline.innerHTML = statuses.map((status, i) => {
+        let dotClass = '';
+        if (i < currentIndex) dotClass = 'completed';
+        else if (i === currentIndex) dotClass = 'active';
+
+        return `
+          <div class="timeline-step">
+            <div class="timeline-dot ${dotClass}">${i + 1}</div>
+            <div class="timeline-label">${status}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function cancelRequest() {
+      showModal('ยกเลิกคำร้อง', 'ท่านต้องการยกเลิกคำร้องนี้หรือไม่?', async () => {
+        showLoading();
+        const result = await api.cancelRequest(requestId);
+        hideLoading();
+
+        if (result) {
+          showToast('ยกเลิกคำร้องสำเร็จ', 'success');
+          setTimeout(() => loadRequest(), 1500);
+        }
+      }, 'ยกเลิก', true);
+    }
+
+    function downloadRequest() {
+      showToast('กำลังดาวน์โหลด...', 'info');
+      // The download link is already in the result section
+    }
+
+    loadRequest();
+  </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ปฐมนิเทศ - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .onboarding-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .onboarding-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .onboarding-header h1 {
+      color: var(--primary);
+    }
+
+    .onboarding-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .step-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-base);
+    }
+
+    .step-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 auto 1rem;
+    }
+
+    .step-card h3 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .feature-item {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .feature-content h4 {
+      margin: 0 0 0.25rem 0;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .feature-content p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .faq-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .faq-item {
+      margin-bottom: 1.5rem;
+    }
+
+    .faq-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .faq-question {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background-color: var(--background);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      color: var(--primary);
+      transition: all var(--transition-fast);
+    }
+
+    .faq-question:hover {
+      background-color: #e3f2fd;
+    }
+
+    .faq-question.active {
+      background-color: #e3f2fd;
+    }
+
+    .faq-icon {
+      font-size: 1.5rem;
+      transition: transform var(--transition-fast);
+    }
+
+    .faq-question.active .faq-icon {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 1rem 1rem 0 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .faq-answer.active {
+      display: block;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 3rem;
+    }
+
+    .info-banner {
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--primary);
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 2rem;
+    }
+
+    .info-banner p {
+      color: var(--primary);
+      margin: 0.5rem 0;
+    }
+
+    .info-banner p:first-child {
+      margin-top: 0;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="onboarding-container">
+    <div class="onboarding-header">
+      <h1>🎓 ยินดีต้อนรับ!</h1>
+      <p>ขั้นตอนสุดท้ายก่อนเริ่มใช้ระบบ</p>
+    </div>
+
+    <div class="info-banner">
+      <p>📚 บทเรียนสั้น ๆ เพื่อให้คุณเข้าใจการใช้งานระบบ</p>
+      <p>ใช้เวลาประมาณ 2-3 นาที</p>
+    </div>
+
+    <div class="onboarding-steps">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>ยื่นคำร้อง</h3>
+        <p>กรอกฟอร์มคำร้องข้อมูลเวชระเบียนของผู้ป่วย</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>ติดตามสถานะ</h3>
+        <p>ตรวจสอบความคืบหน้าของคำร้องแบบเรียลไทม์</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>รับผลลัพธ์</h3>
+        <p>ดาวน์โหลดข้อมูลเวชระเบียนเมื่อเสร็จสิ้น</p>
+      </div>
+    </div>
+
+    <div class="faq-section">
+      <h2 style="margin-bottom: 1.5rem;">❓ คำถามที่พบบ่อย</h2>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <span class="faq-icon">▼</span>
+          <span>ยื่นคำร้องได้กี่ครั้งต่อวัน?</span>
+        </div>
+        <div class="faq-answer">
+          <p>ท่านสามารถยื่นคำร้องได้ไม่จำกัดจำนวนครั้ง แต่ต้องระบุผู้ป่วยที่แตกต่างกัน ระบบจะจำกัดจำนวนผู้ป่วยสูงสุด 20 ราย ต่อคำร้องเดียว</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <span class="faq-icon">▼</span>
+          <span>เวลาที่ใช้ในการประมวลผลคำร้องเป็นเท่าไร?</span>
+        </div>
+        <div class="faq-answer">
+          <p>• <strong>คำร้องปกติ:</strong> 3 วันทำการ<br>• <strong>คำร้องเร่งด่วน:</strong> 1 วันทำการ<br>เวลาจะนับจากวันที่ยื่นคำร้องและไม่รวมวันหยุดราชการ</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <span class="faq-icon">▼</span>
+          <span>ยกเลิกคำร้องได้หรือไม่?</span>
+        </div>
+        <div class="faq-answer">
+          <p>ได้ ท่านสามารถยกเลิกคำร้องได้ตราบเท่าที่ยังอยู่ในสถานะ "รอดำเนินการ" เมื่อเจ้าหน้าที่เริ่มประมวลผลแล้ว จะไม่สามารถยกเลิกได้</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <span class="faq-icon">▼</span>
+          <span>ข้อมูลของฉันปลอดภัยหรือไม่?</span>
+        </div>
+        <div class="faq-answer">
+          <p>ใช่ ระบบนี้ปกป้องข้อมูลของท่านตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล (PDPA) ข้อมูลจะถูกเข้ารหัสและจัดเก็บอย่างปลอดภัย</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <span class="faq-icon">▼</span>
+          <span>ติดต่อเจ้าหน้าที่ได้ที่ไหน?</span>
+        </div>
+        <div class="faq-answer">
+          <p>• <strong>โทรศัพท์:</strong> 0-4320-2000 ต่อ 1234<br>• <strong>เวลาเปิดให้บริการ:</strong> จันทร์-ศุกร์ 08:30-16:30 น.<br>• <strong>ส่วนงาน:</strong> งานเวชระเบียน โรงพยาบาลศรีนครินทร์</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-content">
+          <h4>ความปลอดภัย</h4>
+          <p>ข้อมูลถูกเข้ารหัสและปกป้อง</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-content">
+          <h4>รวดเร็ว</h4>
+          <p>ประมวลผลตามกำหนดเวลา SLA</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">📱</div>
+        <div class="feature-content">
+          <h4>สะดวก</h4>
+          <p>ใช้ได้ทุกอุปกรณ์ทุกเวลา</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">📧</div>
+        <div class="feature-content">
+          <h4>การแจ้งเตือน</h4>
+          <p>รับข้อมูลอัปเดตทันที</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-secondary" onclick="logout()">ออกจากระบบ</button>
+      <button class="btn btn-primary" onclick="completeOnboarding()">เข้าสู่ระบบ 🚀</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    function toggleFAQ(element) {
+      element.classList.toggle('active');
+      element.nextElementSibling.classList.toggle('active');
+    }
+
+    async function completeOnboarding() {
+      showLoading();
+      const result = await api.completeOnboarding();
+      hideLoading();
+
+      if (result) {
+        showToast('เข้าสู่ระบบสำเร็จ', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1000);
+      }
+    }
+  </script>
+</body>
+</html>

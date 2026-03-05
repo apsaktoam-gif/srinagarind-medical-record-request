@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>การแจ้งเตือน - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .header-actions button {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    .filter-tab {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all var(--transition-fast);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1rem;
+      padding-bottom: 1rem;
+    }
+
+    .filter-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .notification-item {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      display: flex;
+      gap: 1rem;
+    }
+
+    .notification-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .notification-item.unread {
+      background-color: #e3f2fd;
+      border-color: var(--primary);
+    }
+
+    .notification-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.5rem;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .notification-time {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .notification-message {
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .notification-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .notification-action {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .notification-action button {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .mark-read-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all var(--transition-fast);
+    }
+
+    .mark-read-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .delete-btn {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all var(--transition-fast);
+    }
+
+    .delete-btn:hover {
+      background-color: #a81818;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .header-actions button {
+        flex: 1;
+      }
+
+      .notification-item {
+        flex-direction: column;
+      }
+
+      .notification-header {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1>🔔 การแจ้งเตือน</h1>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="markAllAsRead()">✓ ทำเครื่องหมายว่าอ่านแล้ว</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">← กลับ</button>
+      </div>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterNotifications('all', this)">ทั้งหมด</button>
+      <button class="filter-tab" onclick="filterNotifications('unread', this)">ยังไม่อ่าน</button>
+      <button class="filter-tab" onclick="filterNotifications('request', this)">คำร้อง</button>
+      <button class="filter-tab" onclick="filterNotifications('system', this)">ระบบ</button>
+    </div>
+
+    <div id="notificationsList"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let allNotifications = [];
+    let currentFilter = 'all';
+
+    async function loadNotifications() {
+      showLoading();
+      const notifications = await api.getNotifications();
+      allNotifications = notifications || [];
+      hideLoading();
+
+      renderNotifications(allNotifications);
+    }
+
+    function filterNotifications(type, element) {
+      currentFilter = type;
+
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      element.classList.add('active');
+
+      // Render filtered notifications
+      let filtered = allNotifications;
+      if (type === 'unread') {
+        filtered = allNotifications.filter(n => !n.read);
+      } else if (type === 'request') {
+        filtered = allNotifications.filter(n => n.type === 'request');
+      } else if (type === 'system') {
+        filtered = allNotifications.filter(n => n.type === 'system');
+      }
+
+      renderNotifications(filtered);
+    }
+
+    function renderNotifications(notifications) {
+      const container = document.getElementById('notificationsList');
+
+      if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <h3>ไม่มีการแจ้งเตือน</h3>
+            <p>ท่านไม่มีการแจ้งเตือนใด ๆ</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = notifications.map(notif => `
+        <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="handleNotificationClick('${notif.id}', '${notif.type}', '${notif.relatedId || ''}')">
+          <div class="notification-icon">${getNotificationIcon(notif.type)}</div>
+          <div class="notification-content">
+            <div class="notification-header">
+              <h3 class="notification-title">${notif.title}</h3>
+              <span class="notification-time">${timeAgo(notif.createdAt)}</span>
+            </div>
+            <div class="notification-message">${notif.message}</div>
+            <div class="notification-meta">
+              ${notif.type === 'request' ? `<span>📋 คำร้อง: ${notif.requestId || '-'}</span>` : ''}
+              ${notif.read ? '<span>✓ อ่านแล้ว</span>' : '<span style="color: var(--primary); font-weight: 600;">● ยังไม่อ่าน</span>'}
+            </div>
+            <div class="notification-action" onclick="event.stopPropagation();">
+              ${!notif.read ? `<button class="mark-read-btn" onclick="markAsRead('${notif.id}')">✓ ทำเครื่องหมายว่าอ่านแล้ว</button>` : ''}
+              <button class="delete-btn" onclick="deleteNotification('${notif.id}')">🗑️ ลบ</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getNotificationIcon(type) {
+      const icons = {
+        'request': '📋',
+        'approved': '✅',
+        'rejected': '❌',
+        'completed': '🎉',
+        'system': 'ℹ️'
+      };
+      return icons[type] || '🔔';
+    }
+
+    async function handleNotificationClick(notifId, type, relatedId) {
+      // Mark as read
+      await api.markNotificationAsRead(notifId);
+
+      // Navigate if it's a request notification
+      if (type === 'request' && relatedId) {
+        window.location.href = `/request-detail.html?id=${relatedId}`;
+      }
+    }
+
+    async function markAsRead(notifId) {
+      await api.markNotificationAsRead(notifId);
+      loadNotifications();
+    }
+
+    async function markAllAsRead() {
+      showLoading();
+      await api.markAllNotificationsAsRead();
+      hideLoading();
+      loadNotifications();
+      showToast('ทำเครื่องหมายว่าอ่านแล้ว', 'success');
+    }
+
+    async function deleteNotification(notifId) {
+      showModal('ลบการแจ้งเตือน', 'ท่านต้องการลบการแจ้งเตือนนี้หรือไม่?', async () => {
+        await api.deleteNotification(notifId);
+        loadNotifications();
+        showToast('ลบการแจ้งเตือนสำเร็จ', 'success');
+      }, 'ลบ', true);
+    }
+
+    loadNotifications();
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadNotifications, 30000);
+  </script>
+</body>
+</html>

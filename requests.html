@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการคำร้อง - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      background-color: var(--primary);
+      color: white;
+      padding: 2rem 0;
+      position: fixed;
+      width: 250px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .admin-sidebar-brand {
+      padding: 0 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .admin-sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .admin-sidebar-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .admin-sidebar-link:hover,
+    .admin-sidebar-link.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .admin-main {
+      grid-column: 2;
+      padding: 2rem;
+      background-color: var(--background);
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .admin-header h1 {
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .filter-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .content-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .content-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: var(--background);
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:hover {
+      background-color: var(--background);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-buttons button {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .request-detail-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .request-detail-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .request-detail-content {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      max-width: 800px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .request-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .request-detail-header h2 {
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 1rem 0;
+      }
+
+      .admin-main {
+        grid-column: 1;
+        padding: 1rem;
+      }
+
+      .admin-sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+        padding: 0 1rem;
+      }
+
+      .admin-sidebar-item {
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .admin-sidebar-link {
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        🏥 Admin Panel
+      </div>
+      <ul class="admin-sidebar-menu">
+        <li class="admin-sidebar-item">
+          <a href="/admin/index.html" class="admin-sidebar-link">📊 แดชบอร์ด</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/requests.html" class="admin-sidebar-link active">📋 จัดการคำร้อง</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/users.html" class="admin-sidebar-link">👥 จัดการผู้ใช้</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/reports.html" class="admin-sidebar-link">📈 รายงาน</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/settings.html" class="admin-sidebar-link">⚙️ ตั้งค่า</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/dashboard.html" class="admin-sidebar-link">🚪 ออกจากแอดมิน</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      <div class="admin-header">
+        <h1>📋 จัดการคำร้อง</h1>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-section">
+        <div class="filter-row">
+          <div class="form-group">
+            <label for="filterStatus">สถานะ</label>
+            <select id="filterStatus" onchange="loadRequests()">
+              <option value="">ทั้งหมด</option>
+              <option value="รอดำเนินการ">รอดำเนินการ</option>
+              <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+              <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+              <option value="ปฏิเสธ">ปฏิเสธ</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterUrgency">ความเร่งด่วน</label>
+            <select id="filterUrgency" onchange="loadRequests()">
+              <option value="">ทั้งหมด</option>
+              <option value="normal">ปกติ</option>
+              <option value="urgent">เร่งด่วน</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterSLA">SLA</label>
+            <select id="filterSLA" onchange="loadRequests()">
+              <option value="">ทั้งหมด</option>
+              <option value="ontime">ตามเวลา</option>
+              <option value="overdue">เกินกำหนด</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="searchRequest">ค้นหา</label>
+            <input type="text" id="searchRequest" placeholder="ID หรือชื่อผู้ยื่น" onchange="loadRequests()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Requests Table -->
+      <div class="content-card">
+        <div class="content-title">รายการคำร้อง</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ผู้ยื่น</th>
+                <th>ประเภท</th>
+                <th>สถานะ</th>
+                <th>ความเร่งด่วน</th>
+                <th>วันที่ยื่น</th>
+                <th>SLA</th>
+                <th>การดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTable">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-secondary);">กำลังโหลด...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Detail Modal -->
+  <div id="requestDetailModal" class="request-detail-modal">
+    <div class="request-detail-content">
+      <div class="request-detail-header">
+        <h2 id="detailRequestId">REQ-2568-0000</h2>
+        <button class="close-btn" onclick="closeDetailModal()">✕</button>
+      </div>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    requireAuth();
+    requireAdmin();
+
+    async function loadRequests() {
+      showLoading();
+
+      const filters = {
+        status: document.getElementById('filterStatus').value,
+        urgency: document.getElementById('filterUrgency').value,
+        sla: document.getElementById('filterSLA').value,
+        search: document.getElementById('searchRequest').value
+      };
+
+      const requests = await api.getAdminRequests(null, filters);
+      hideLoading();
+
+      if (requests && requests.length > 0) {
+        document.getElementById('requestsTable').innerHTML = requests.map(req => `
+          <tr>
+            <td>${req.requestId}</td>
+            <td>${req.requesterName}</td>
+            <td>${req.requestType}</td>
+            <td>${req.status}</td>
+            <td>${req.urgency === 'urgent' ? '⚡ เร่งด่วน' : 'ปกติ'}</td>
+            <td>${formatThaiDate(req.createdAt)}</td>
+            <td>${req.slaStatus === 'overdue' ? '❌ เกินกำหนด' : '✓ ตามเวลา'}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showRequestDetail('${req.requestId}')">ดู</button>
+                <button class="btn btn-secondary" onclick="processRequest('${req.requestId}')">ประมวลผล</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        document.getElementById('requestsTable').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">ไม่พบคำร้อง</td></tr>';
+      }
+    }
+
+    async function showRequestDetail(requestId) {
+      showLoading();
+      const request = await api.getRequest(requestId);
+      hideLoading();
+
+      if (!request) {
+        showToast('ไม่พบคำร้อง', 'error');
+        return;
+      }
+
+      document.getElementById('detailRequestId').textContent = request.requestId;
+      document.getElementById('detailContent').innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <h3>ข้อมูลผู้ยื่น</h3>
+          <p><strong>ชื่อ:</strong> ${request.requesterName}</p>
+          <p><strong>อีเมล:</strong> ${request.requesterEmail}</p>
+          <p><strong>เบอร์โทร:</strong> ${request.requesterPhone}</p>
+          <p><strong>หน่วยงาน:</strong> ${request.requesterDepartment}</p>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <h3>ข้อมูลคำร้อง</h3>
+          <p><strong>ประเภท:</strong> ${request.requestType}</p>
+          <p><strong>สถานะ:</strong> ${request.status}</p>
+          <p><strong>ความเร่งด่วน:</strong> ${request.urgency === 'urgent' ? 'เร่งด่วน' : 'ปกติ'}</p>
+          <p><strong>วันที่ยื่น:</strong> ${formatThaiDateTime(request.createdAt)}</p>
+          <p><strong>กำหนดเสร็จ:</strong> ${formatThaiDate(request.slaDeadline)}</p>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <h3>ผู้ป่วย</h3>
+          ${request.patients.map(p => `<p>• ${p.hn} - ${p.name}</p>`).join('')}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <h3>เอกสารที่ขอ</h3>
+          ${request.requestedDocs.map(doc => `<p>• ${doc}</p>`).join('')}
+        </div>
+
+        ${request.additionalNote ? `
+          <div style="margin-bottom: 1.5rem;">
+            <h3>หมายเหตุ</h3>
+            <p>${request.additionalNote}</p>
+          </div>
+        ` : ''}
+
+        <div style="display: flex; gap: 1rem;">
+          <button class="btn btn-primary" onclick="approveRequest('${request.requestId}')">✓ อนุมัติ</button>
+          <button class="btn btn-danger" onclick="rejectRequest('${request.requestId}')">✕ ปฏิเสธ</button>
+          <button class="btn btn-secondary" onclick="closeDetailModal()">ปิด</button>
+        </div>
+      `;
+
+      document.getElementById('requestDetailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('requestDetailModal').classList.remove('active');
+    }
+
+    async function processRequest(requestId) {
+      showModal('ประมวลผลคำร้อง', 'ท่านต้องการประมวลผลคำร้องนี้หรือไม่?', async () => {
+        showLoading();
+        const result = await api.processRequest(requestId);
+        hideLoading();
+
+        if (result) {
+          showToast('ประมวลผลสำเร็จ', 'success');
+          loadRequests();
+        }
+      }, 'ประมวลผล');
+    }
+
+    async function approveRequest(requestId) {
+      const note = prompt('ระบุหมายเหตุ (ถ้ามี):');
+      showLoading();
+      const result = await api.approveRequest(requestId, note || '');
+      hideLoading();
+
+      if (result) {
+        showToast('อนุมัติสำเร็จ', 'success');
+        closeDetailModal();
+        loadRequests();
+      }
+    }
+
+    async function rejectRequest(requestId) {
+      const reason = prompt('ระบุเหตุผลการปฏิเสธ:');
+      if (!reason) return;
+
+      showLoading();
+      const result = await api.rejectRequest(requestId, reason);
+      hideLoading();
+
+      if (result) {
+        showToast('ปฏิเสธสำเร็จ', 'success');
+        closeDetailModal();
+        loadRequests();
+      }
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>

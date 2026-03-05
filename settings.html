@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่า - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      background-color: var(--primary);
+      color: white;
+      padding: 2rem 0;
+      position: fixed;
+      width: 250px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .admin-sidebar-brand {
+      padding: 0 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .admin-sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .admin-sidebar-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .admin-sidebar-link:hover,
+    .admin-sidebar-link.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .admin-main {
+      grid-column: 2;
+      padding: 2rem;
+      background-color: var(--background);
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .admin-header h1 {
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .settings-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .settings-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-row .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .info-box {
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+    }
+
+    .info-box p {
+      color: var(--primary);
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+    }
+
+    .info-box p:first-child {
+      margin-top: 0;
+      font-weight: 600;
+    }
+
+    .info-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    @media (max-width: 768px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 1rem 0;
+      }
+
+      .admin-main {
+        grid-column: 1;
+        padding: 1rem;
+      }
+
+      .admin-sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+        padding: 0 1rem;
+      }
+
+      .admin-sidebar-item {
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .admin-sidebar-link {
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .form-actions button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        🏥 Admin Panel
+      </div>
+      <ul class="admin-sidebar-menu">
+        <li class="admin-sidebar-item">
+          <a href="/admin/index.html" class="admin-sidebar-link">📊 แดชบอร์ด</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/requests.html" class="admin-sidebar-link">📋 จัดการคำร้อง</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/users.html" class="admin-sidebar-link">👥 จัดการผู้ใช้</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/reports.html" class="admin-sidebar-link">📈 รายงาน</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/settings.html" class="admin-sidebar-link active">⚙️ ตั้งค่า</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/dashboard.html" class="admin-sidebar-link">🚪 ออกจากแอดมิน</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      <div class="admin-header">
+        <h1>⚙️ ตั้งค่า</h1>
+      </div>
+
+      <!-- System Settings -->
+      <div class="settings-section">
+        <div class="settings-title">🔧 ตั้งค่าระบบ</div>
+
+        <div class="info-box">
+          <p>📋 ตั้งค่าพื้นฐานของระบบ</p>
+          <p>การเปลี่ยนแปลงจะมีผลกับทั้งระบบ</p>
+        </div>
+
+        <form id="systemSettingsForm">
+          <div class="form-group">
+            <label for="systemName">ชื่อระบบ</label>
+            <input type="text" id="systemName" name="systemName" placeholder="ระบบคำขอข้อมูลเวชระเบียน">
+          </div>
+
+          <div class="form-group">
+            <label for="hospitalName">ชื่อโรงพยาบาล</label>
+            <input type="text" id="hospitalName" name="hospitalName" placeholder="โรงพยาบาลศรีนครินทร์">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contactPhone">เบอร์โทรติดต่อ</label>
+              <input type="tel" id="contactPhone" name="contactPhone" placeholder="0-4320-2000 ต่อ 1234">
+            </div>
+            <div class="form-group">
+              <label for="contactEmail">อีเมลติดต่อ</label>
+              <input type="email" id="contactEmail" name="contactEmail" placeholder="info@hospital.ac.th">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- SLA Settings -->
+      <div class="settings-section">
+        <div class="settings-title">⏰ ตั้งค่า SLA</div>
+
+        <form id="slaSettingsForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="normalSLA">เวลา SLA ปกติ (วัน)</label>
+              <input type="number" id="normalSLA" name="normalSLA" min="1" max="30" value="3">
+            </div>
+            <div class="form-group">
+              <label for="urgentSLA">เวลา SLA เร่งด่วน (วัน)</label>
+              <input type="number" id="urgentSLA" name="urgentSLA" min="1" max="30" value="1">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="settings-section">
+        <div class="settings-title">🔔 ตั้งค่าการแจ้งเตือน</div>
+
+        <form id="notificationSettingsForm">
+          <div class="form-group">
+            <div class="toggle-group">
+              <label class="toggle-switch">
+                <input type="checkbox" id="emailNotifications" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <label for="emailNotifications">ส่งการแจ้งเตือนทางอีเมล</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="toggle-group">
+              <label class="toggle-switch">
+                <input type="checkbox" id="inAppNotifications" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <label for="inAppNotifications">แจ้งเตือนภายในแอปพลิเคชัน</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="notificationEmail">อีเมลสำหรับการแจ้งเตือน</label>
+            <input type="email" id="notificationEmail" name="notificationEmail" placeholder="admin@hospital.ac.th">
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Security Settings -->
+      <div class="settings-section">
+        <div class="settings-title">🔒 ตั้งค่าความปลอดภัย</div>
+
+        <form id="securitySettingsForm">
+          <div class="form-group">
+            <div class="toggle-group">
+              <label class="toggle-switch">
+                <input type="checkbox" id="twoFactorAuth">
+                <span class="toggle-slider"></span>
+              </label>
+              <label for="twoFactorAuth">เปิดใช้งาน Two-Factor Authentication</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sessionTimeout">หมดเวลา Session (นาที)</label>
+            <input type="number" id="sessionTimeout" name="sessionTimeout" min="5" max="480" value="60">
+          </div>
+
+          <div class="form-group">
+            <label for="passwordPolicy">นโยบายรหัสผ่าน</label>
+            <select id="passwordPolicy" name="passwordPolicy">
+              <option value="weak">ปกติ</option>
+              <option value="medium">ปานกลาง</option>
+              <option value="strong">แข็งแกร่ง</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Backup & Maintenance -->
+      <div class="settings-section">
+        <div class="settings-title">🔄 การสำรองข้อมูลและการบำรุงรักษา</div>
+
+        <div class="info-box">
+          <p>📊 การสำรองข้อมูลล่าสุด: 2568-03-04 23:30 น.</p>
+          <p>✓ สถานะ: สำเร็จ</p>
+        </div>
+
+        <div class="form-group">
+          <button type="button" class="btn btn-primary" onclick="backupNow()">🔄 สำรองข้อมูลทันที</button>
+          <button type="button" class="btn btn-secondary" onclick="viewBackups()">📁 ดูการสำรองข้อมูล</button>
+        </div>
+      </div>
+
+      <!-- Audit Log -->
+      <div class="settings-section">
+        <div class="settings-title">📋 บันทึกการตรวจสอบ</div>
+
+        <div class="info-box">
+          <p>📝 บันทึกการตรวจสอบทั้งหมด</p>
+          <p>ข้อมูลการเข้าถึง การเปลี่ยนแปลง และการดำเนินการ</p>
+        </div>
+
+        <button type="button" class="btn btn-secondary" onclick="viewAuditLog()">📊 ดูบันทึกการตรวจสอบ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    requireAuth();
+    requireAdmin();
+
+    // Load settings
+    async function loadSettings() {
+      const settings = await api.getAdminSettings();
+      if (settings) {
+        // System settings
+        document.getElementById('systemName').value = settings.systemName || '';
+        document.getElementById('hospitalName').value = settings.hospitalName || '';
+        document.getElementById('contactPhone').value = settings.contactPhone || '';
+        document.getElementById('contactEmail').value = settings.contactEmail || '';
+
+        // SLA settings
+        document.getElementById('normalSLA').value = settings.normalSLA || 3;
+        document.getElementById('urgentSLA').value = settings.urgentSLA || 1;
+
+        // Notification settings
+        document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
+        document.getElementById('inAppNotifications').checked = settings.inAppNotifications !== false;
+        document.getElementById('notificationEmail').value = settings.notificationEmail || '';
+
+        // Security settings
+        document.getElementById('twoFactorAuth').checked = settings.twoFactorAuth || false;
+        document.getElementById('sessionTimeout').value = settings.sessionTimeout || 60;
+        document.getElementById('passwordPolicy').value = settings.passwordPolicy || 'medium';
+      }
+    }
+
+    // Form submissions
+    document.getElementById('systemSettingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showLoading();
+      const result = await api.updateAdminSettings({
+        systemName: document.getElementById('systemName').value,
+        hospitalName: document.getElementById('hospitalName').value,
+        contactPhone: document.getElementById('contactPhone').value,
+        contactEmail: document.getElementById('contactEmail').value
+      });
+      hideLoading();
+      if (result) showToast('บันทึกสำเร็จ', 'success');
+    });
+
+    document.getElementById('slaSettingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showLoading();
+      const result = await api.updateAdminSettings({
+        normalSLA: parseInt(document.getElementById('normalSLA').value),
+        urgentSLA: parseInt(document.getElementById('urgentSLA').value)
+      });
+      hideLoading();
+      if (result) showToast('บันทึก SLA สำเร็จ', 'success');
+    });
+
+    document.getElementById('notificationSettingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showLoading();
+      const result = await api.updateAdminSettings({
+        emailNotifications: document.getElementById('emailNotifications').checked,
+        inAppNotifications: document.getElementById('inAppNotifications').checked,
+        notificationEmail: document.getElementById('notificationEmail').value
+      });
+      hideLoading();
+      if (result) showToast('บันทึกการแจ้งเตือนสำเร็จ', 'success');
+    });
+
+    document.getElementById('securitySettingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showLoading();
+      const result = await api.updateAdminSettings({
+        twoFactorAuth: document.getElementById('twoFactorAuth').checked,
+        sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+        passwordPolicy: document.getElementById('passwordPolicy').value
+      });
+      hideLoading();
+      if (result) showToast('บันทึกการตั้งค่าความปลอดภัยสำเร็จ', 'success');
+    });
+
+    function backupNow() {
+      showModal('สำรองข้อมูล', 'ท่านต้องการสำรองข้อมูลทันทีหรือไม่?', async () => {
+        showLoading();
+        const result = await api.backupDatabase();
+        hideLoading();
+        if (result) showToast('สำรองข้อมูลสำเร็จ', 'success');
+      }, 'สำรอง');
+    }
+
+    function viewBackups() {
+      showToast('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา', 'info');
+    }
+
+    function viewAuditLog() {
+      showToast('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา', 'info');
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

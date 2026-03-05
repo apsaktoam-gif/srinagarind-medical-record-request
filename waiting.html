@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รอการอนุมัติ - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .waiting-container {
+      max-width: 500px;
+      margin: 4rem auto;
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    .waiting-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2rem;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .waiting-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .waiting-card h1 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .waiting-card p {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    
+    .timeline {
+      text-align: left;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background-color: var(--background);
+      border-radius: var(--radius-lg);
+    }
+    
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .timeline-dot {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .timeline-dot.completed {
+      background-color: var(--success);
+    }
+    
+    .timeline-content h3 {
+      font-size: 1rem;
+      margin: 0 0 0.25rem 0;
+      color: var(--text-primary);
+    }
+    
+    .timeline-content p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    
+    .info-box {
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+    
+    .info-box p {
+      color: var(--primary);
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+    }
+    
+    .info-box p:first-child {
+      margin-top: 0;
+    }
+    
+    .info-box p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      background-color: #fef3c7;
+      color: #92400e;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="waiting-container">
+    <div class="waiting-card">
+      <div class="waiting-icon">⏳</div>
+      <h1>รอการอนุมัติ</h1>
+      <p>ขอบคุณที่ลงทะเบียนใช้ระบบคำขอข้อมูลเวชระเบียน</p>
+      
+      <div class="status-badge">สถานะ: รอการตรวจสอบ</div>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot completed">✓</div>
+          <div class="timeline-content">
+            <h3>ลงทะเบียนเสร็จสิ้น</h3>
+            <p>ข้อมูลของท่านได้รับการบันทึกแล้ว</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-dot">2</div>
+          <div class="timeline-content">
+            <h3>รอการตรวจสอบ</h3>
+            <p>เจ้าหน้าที่กำลังตรวจสอบข้อมูลของท่าน (ปกติ 1-2 วันทำการ)</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-dot">3</div>
+          <div class="timeline-content">
+            <h3>ได้รับการอนุมัติ</h3>
+            <p>ท่านจะได้รับการแจ้งเตือนทางอีเมล</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="info-box">
+        <p>📧 <strong>เราจะส่งอีเมลแจ้งให้ท่านทราบ</strong> เมื่อการตรวจสอบเสร็จสิ้น</p>
+        <p>📞 หากมีคำถาม โปรดติดต่อ: <strong>0-4320-2000 ต่อ 1234</strong></p>
+        <p>⏰ <strong>เวลาเปิดให้บริการ:</strong> จันทร์-ศุกร์ 08:30-16:30 น.</p>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="logout()">ออกจากระบบ</button>
+        <button class="btn btn-primary" onclick="checkStatus()">ตรวจสอบสถานะ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    async function checkStatus() {
+      const profile = await api.getProfile();
+      
+      if (!profile) {
+        showToast('ไม่สามารถดึงข้อมูลได้', 'error');
+        return;
+      }
+
+      if (profile.status === 'approved') {
+        if (profile.profileComplete) {
+          window.location.href = '/dashboard.html';
+        } else {
+          window.location.href = '/profile-setup.html';
+        }
+      } else if (profile.status === 'rejected') {
+        showToast('ขออภัย บัญชีของท่านถูกปฏิเสธ', 'error');
+        setTimeout(() => logout(), 2000);
+      } else {
+        showToast('ยังรอการอนุมัติ กรุณารอสักครู่', 'info');
+      }
+    }
+
+    // Auto-check status every 30 seconds
+    setInterval(checkStatus, 30000);
+  </script>
+</body>
+</html>

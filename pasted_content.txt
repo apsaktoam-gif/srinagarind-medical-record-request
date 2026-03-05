@@ -1,0 +1,188 @@
+  Header: flex justify-between items-center + "ผู้ป่วยที่ {n}" font-semibold
+  [ลบ ✕]: text-red-500 hover:text-red-700 (hidden ถ้าการ์ดแรกและมีเพียง 1 ใบ)
+  Radio toggle AN/ไม่ทราบ AN:
+    แสดง/ซ่อน field ด้วย JS classList toggle
+
+  [+ เพิ่มผู้ป่วย] button:
+    border-2 border-dashed border-gray-300 rounded-xl py-3
+    text-gray-500 hover:border-blue-400 hover:text-blue-600
+    disabled → border-gray-200 text-gray-300 cursor-not-allowed
+    + tooltip "ครบจำนวนสูงสุด 20 รายแล้ว"
+
+── Step Indicator (request-new.html) ───────────────────────────────
+
+  4 steps: filled circle (ผ่านแล้ว=เขียว) | active=น้ำเงิน | inactive=เทา
+  เชื่อมด้วยเส้น divider
+  ชื่อ step ใต้แต่ละ circle
+
+── Status Timeline (request-detail.html) ───────────────────────────
+
+  Horizontal steps: ● → ● → ● → ●
+  step สีเขียว = ผ่านแล้ว | น้ำเงิน = ปัจจุบัน | เทา = ยังไม่ถึง
+  แสดงวันที่ใต้แต่ละ step ที่ผ่านแล้ว
+
+── Responsive ──────────────────────────────────────────────────────
+
+  Mobile-first (sm:640 md:768 lg:1024 xl:1280)
+  Admin Sidebar: hidden on mobile → hamburger menu
+  Tables: overflow-x-auto horizontal scroll on mobile
+  Patient cards: 1 column on mobile, 2 columns md+
+  KPI cards: 2 columns on mobile, 4 columns lg+
+
+── Button Styles ────────────────────────────────────────────────────
+
+  Primary:   bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg
+  Secondary: bg-white border border-gray-300 text-gray-700 hover:bg-gray-50
+  Success:   bg-green-600 hover:bg-green-700 text-white
+  Danger:    bg-red-600 hover:bg-red-700 text-white
+  Loading:   opacity-75 cursor-not-allowed + spinner icon inline
+
+═══════════════════════════════════════════════════════════════════
+SECTION 13: SECURITY RULES
+═══════════════════════════════════════════════════════════════════
+
+1. ทุก Apps Script function (ยกเว้น checkEmail, getMasterData, getSettings)
+   ต้องผ่าน verifyGoogleToken() ก่อนทุกครั้ง
+
+2. Domain check: รับเฉพาะ @gmail.com และ @kku.ac.th เท่านั้น
+
+3. Row-level access:
+     user    → อ่าน/จัดการได้เฉพาะ request ของตัวเอง
+     staff   → อ่าน/จัดการ request ทั้งหมด แต่ห้ามเข้าถึง Users, Settings, Admins
+     admin   → เข้าถึงได้ทุกอย่าง
+
+4. Admin-only functions ต้องตรวจ isAdmin(email) จาก Admins sheet
+
+5. File security:
+     - ตรวจ mimeType + ขนาดทั้งฝั่ง frontend และ backend
+     - แต่ละ request มี subfolder แยกใน Drive (ป้องกัน URL เดา)
+     - deleteAttachment ตรวจ ownership หรือ isAdmin ก่อนเสมอ
+
+6. Input sanitization:
+     - trim() ทุก string input
+     - reject HTML tags ด้วย regex /<[^>]*>/g
+
+7. PDPA Compliance:
+     - บันทึก AuditLog ทุก action ที่เกี่ยวข้องกับข้อมูลผู้ป่วย
+     - ไม่ return ข้อมูล HN/AN/ชื่อผู้ป่วย ให้ user ที่ไม่ใช่เจ้าของ request
+     - PDPA consent checkbox บังคับก่อน submit ทุกครั้ง
+
+8. Rate limiting (frontend):
+     - login fail ≥ 5 ครั้ง → lock UI 15 นาที (localStorage timestamp)
+     - แสดง countdown นาทีที่เหลือ
+
+9. ห้าม admin ลบ/ระงับตัวเอง (ตรวจใน backend + frontend)
+
+10. Notification ส่งได้เฉพาะเจ้าหน้าที่ระบบ ห้าม user ทั่วไป
+    สร้าง notification ให้คนอื่นได้เอง
+
+═══════════════════════════════════════════════════════════════════
+SECTION 14: GITHUB ACTIONS — deploy.yml
+═══════════════════════════════════════════════════════════════════
+
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          exclude_assets: '.github,Code.gs,README.md'
+
+═══════════════════════════════════════════════════════════════════
+SECTION 15: README.md
+═══════════════════════════════════════════════════════════════════
+
+# ระบบคำขอข้อมูลเวชระเบียน — โรงพยาบาลศรีนครินทร์
+
+## การติดตั้ง (Setup Guide)
+
+### 1. Google Sheets
+  - สร้าง Spreadsheet ใหม่
+  - คัดลอก SHEET_ID จาก URL
+  - ระบบจะสร้าง 9 sheets อัตโนมัติเมื่อ deploy Apps Script
+
+### 2. Google Drive
+  - สร้าง folder สำหรับ Avatar → คัดลอก Folder ID → AVATAR_FOLDER_ID
+  - สร้าง folder สำหรับ Attachment → คัดลอก Folder ID → ATTACHMENT_FOLDER_ID
+
+### 3. Google Apps Script
+  - ไปที่ script.google.com → สร้างโปรเจกต์ใหม่
+  - วาง Code.gs ทั้งหมด
+  - Deploy → Web App → Execute as: Me → Anyone
+  - คัดลอก URL → APPS_SCRIPT_URL
+
+### 4. Firebase
+  - สร้างโปรเจกต์ใหม่ที่ console.firebase.google.com
+  - เปิด Authentication → Google Sign-In
+  - เพิ่ม domain: {your-github-username}.github.io
+  - คัดลอก Firebase config → js/config.js
+
+### 5. GitHub Repository
+  - push code ไปที่ GitHub
+  - Settings → Pages → Source: gh-pages branch
+  - แก้ไข js/config.js ใส่ค่าจริงทั้งหมด
+
+## Known Limitations
+  - Apps Script cold start: 2-3 วินาที
+  - Concurrent users: ~30 คน (เพียงพอสำหรับงานเวชระเบียน)
+  - Google Sheets quota: อ่าน 20,000 / เขียน 2,000 ครั้ง/วัน
+  - ไฟล์ Base64 ขนาดใหญ่อาจช้า (แนะนำ ≤ 5MB/ไฟล์)
+  - ไม่มีการส่งอีเมล — ใช้ระบบแจ้งเตือนในเว็บเท่านั้น
+
+## Notification Types
+  request_received | new_request_alert | status_update
+  result_ready | request_rejected | user_approved
+  new_user_pending | request_cancelled | announcement
+
+═══════════════════════════════════════════════════════════════════
+FINAL INSTRUCTION
+═══════════════════════════════════════════════════════════════════
+
+Generate ALL files completely. Do not skip any file.
+Do not write placeholder comments like "// implement here".
+Every function must be fully working code.
+
+File generation order:
+  1.  js/config.js
+  2.  js/utils.js
+  3.  js/auth.js
+  4.  js/api.js
+  5.  js/upload.js
+  6.  js/notify.js
+  7.  css/style.css
+  8.  Code.gs              ← Apps Script backend (most important)
+  9.  index.html
+  10. register.html
+  11. waiting.html
+  12. profile-setup.html
+  13. onboarding.html
+  14. dashboard.html
+  15. request-new.html
+  16. request-detail.html
+  17. notifications.html
+  18. admin/index.html
+  19. admin/users.html
+  20. admin/staff.html
+  21. admin/requests.html
+  22. admin/reports.html
+  23. admin/announce.html
+  24. admin/auditlog.html
+  25. admin/export.html
+  26. admin/settings.html
+  27. 404.html
+  28. .github/workflows/deploy.yml
+  29. README.md
+
+Start immediately with file 1. Do not stop until all 29 files
+are complete. After each file write: "✅ [filename] complete"
+then proceed to the next file without asking.

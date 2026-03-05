@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการผู้ใช้ - ระบบคำขอข้อมูลเวชระเบียน</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      background-color: var(--primary);
+      color: white;
+      padding: 2rem 0;
+      position: fixed;
+      width: 250px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .admin-sidebar-brand {
+      padding: 0 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .admin-sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .admin-sidebar-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .admin-sidebar-link:hover,
+    .admin-sidebar-link.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .admin-main {
+      grid-column: 2;
+      padding: 2rem;
+      background-color: var(--background);
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .admin-header h1 {
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .filter-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .content-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .content-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: var(--background);
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:hover {
+      background-color: var(--background);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-buttons button {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-approved {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .status-pending {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-rejected {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    @media (max-width: 768px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 1rem 0;
+      }
+
+      .admin-main {
+        grid-column: 1;
+        padding: 1rem;
+      }
+
+      .admin-sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+        padding: 0 1rem;
+      }
+
+      .admin-sidebar-item {
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .admin-sidebar-link {
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        🏥 Admin Panel
+      </div>
+      <ul class="admin-sidebar-menu">
+        <li class="admin-sidebar-item">
+          <a href="/admin/index.html" class="admin-sidebar-link">📊 แดชบอร์ด</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/requests.html" class="admin-sidebar-link">📋 จัดการคำร้อง</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/users.html" class="admin-sidebar-link active">👥 จัดการผู้ใช้</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/reports.html" class="admin-sidebar-link">📈 รายงาน</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/admin/settings.html" class="admin-sidebar-link">⚙️ ตั้งค่า</a>
+        </li>
+        <li class="admin-sidebar-item">
+          <a href="/dashboard.html" class="admin-sidebar-link">🚪 ออกจากแอดมิน</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      <div class="admin-header">
+        <h1>👥 จัดการผู้ใช้</h1>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-section">
+        <div class="filter-row">
+          <div class="form-group">
+            <label for="filterStatus">สถานะ</label>
+            <select id="filterStatus" onchange="loadUsers()">
+              <option value="">ทั้งหมด</option>
+              <option value="approved">อนุมัติแล้ว</option>
+              <option value="pending">รอการอนุมัติ</option>
+              <option value="rejected">ปฏิเสธ</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterOccupation">อาชีพ</label>
+            <select id="filterOccupation" onchange="loadUsers()">
+              <option value="">ทั้งหมด</option>
+              <option value="doctor">แพทย์</option>
+              <option value="nurse">พยาบาล</option>
+              <option value="lawyer">ทนายความ</option>
+              <option value="other">อื่น ๆ</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="searchUser">ค้นหา</label>
+            <input type="text" id="searchUser" placeholder="ชื่อหรืออีเมล" onchange="loadUsers()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="content-card">
+        <div class="content-title">รายการผู้ใช้</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อ</th>
+                <th>อีเมล</th>
+                <th>อาชีพ</th>
+                <th>หน่วยงาน</th>
+                <th>สถานะ</th>
+                <th>วันที่ลงทะเบียน</th>
+                <th>การดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-secondary);">กำลังโหลด...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    requireAuth();
+    requireAdmin();
+
+    async function loadUsers() {
+      showLoading();
+
+      const filters = {
+        status: document.getElementById('filterStatus').value,
+        occupation: document.getElementById('filterOccupation').value,
+        search: document.getElementById('searchUser').value
+      };
+
+      const users = await api.getAdminUsers(filters);
+      hideLoading();
+
+      if (users && users.length > 0) {
+        document.getElementById('usersTable').innerHTML = users.map(user => `
+          <tr>
+            <td>${user.firstName} ${user.lastName}</td>
+            <td>${user.email}</td>
+            <td>${user.occupation}</td>
+            <td>${user.department || '-'}</td>
+            <td>
+              <span class="status-badge status-${user.status}">
+                ${user.status === 'approved' ? '✓ อนุมัติแล้ว' : user.status === 'pending' ? '⏳ รอการอนุมัติ' : '✕ ปฏิเสธ'}
+              </span>
+            </td>
+            <td>${formatThaiDate(user.createdAt)}</td>
+            <td>
+              <div class="action-buttons">
+                ${user.status === 'pending' ? `
+                  <button class="btn btn-primary" onclick="approveUser('${user.userId}')">อนุมัติ</button>
+                  <button class="btn btn-danger" onclick="rejectUser('${user.userId}')">ปฏิเสธ</button>
+                ` : `
+                  <button class="btn btn-secondary" onclick="viewUser('${user.userId}')">ดู</button>
+                `}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">ไม่พบผู้ใช้</td></tr>';
+      }
+    }
+
+    async function approveUser(userId) {
+      showModal('อนุมัติผู้ใช้', 'ท่านต้องการอนุมัติผู้ใช้นี้หรือไม่?', async () => {
+        showLoading();
+        const result = await api.approveUser(userId);
+        hideLoading();
+
+        if (result) {
+          showToast('อนุมัติสำเร็จ', 'success');
+          loadUsers();
+        }
+      }, 'อนุมัติ');
+    }
+
+    async function rejectUser(userId) {
+      const reason = prompt('ระบุเหตุผลการปฏิเสธ:');
+      if (!reason) return;
+
+      showLoading();
+      const result = await api.rejectUser(userId, reason);
+      hideLoading();
+
+      if (result) {
+        showToast('ปฏิเสธสำเร็จ', 'success');
+        loadUsers();
+      }
+    }
+
+    function viewUser(userId) {
+      showToast('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา', 'info');
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
