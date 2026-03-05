@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Google Apps Script Web App URL (ต้องแก้ไขหลัง deploy)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/u/1/s/AKfycbwad-BjXldHQygL5gGRkLrvz84mlg62QNxwkEPMhJTtB4ZEdBIFvD45ikC_lBMT962b/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwSmXOFhPHu6DFyC0kuhj9sQjYSu-YwS0p8vWVy61vlzlq-TH9BrI7fl4mtlbUH-rmY/exec';
 
 // Allowed email domains
 const ALLOWED_DOMAINS = ['gmail.com', 'kku.ac.th'];
